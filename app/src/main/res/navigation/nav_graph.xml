@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/welcomeFragment">
+
+    <fragment
+        android:id="@+id/welcomeFragment"
+        android:name="com.example.taskmanagement.auth.WelcomeFragment"
+        android:label="fragment_welcome"
+        tools:layout="@layout/fragment_welcome" >
+        <action
+            android:id="@+id/action_welcomeFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_welcomeFragment_to_registerFragment"
+            app:destination="@id/registerFragment" />
+        <action
+            android:id="@+id/action_welcomeFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_welcomeFragment_to_searchFragment2"
+            app:destination="@id/searchFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.taskmanagement.auth.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_loginFragment_to_forgotPasswordFragment"
+            app:destination="@id/forgotPasswordFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_registerFragment"
+            app:destination="@id/registerFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.example.taskmanagement.auth.RegisterFragment"
+        android:label="fragment_register"
+        tools:layout="@layout/fragment_register" >
+        <action
+            android:id="@+id/action_registerFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/forgotPasswordFragment"
+        android:name="com.example.taskmanagement.auth.ForgotPasswordFragment"
+        android:label="fragment_forgot_password"
+        tools:layout="@layout/fragment_forgot_password" >
+        <action
+            android:id="@+id/action_forgotPasswordFragment_to_welcomeFragment"
+            app:destination="@id/welcomeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.taskmanagement.task.HomeFragment"
+        android:label="fragment_home"
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_homeFragment_to_addTaskFragment"
+            app:destination="@id/addTaskFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_chatFragment"
+            app:destination="@id/chatFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_addSubTaskFragment"
+            app:destination="@id/addSubTaskFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_subTaskFragment"
+            app:destination="@id/subTaskFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_ChatFragment"
+            app:destination="@id/chatFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_userSelectionFragment"
+            app:destination="@id/userSelectionFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_searchFragment2"
+            app:destination="@id/searchFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_modifyTaskFragment"
+            app:destination="@id/modifyTaskFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_modifyTaskFragment2"
+            app:destination="@id/modifyTaskFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/addTaskFragment"
+        android:name="com.example.taskmanagement.task.AddTaskFragment"
+        android:label="fragment_add_task"
+        tools:layout="@layout/fragment_add_task" >
+        <action
+            android:id="@+id/action_addTaskFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_addTaskFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
+        <action
+            android:id="@+id/action_addTaskFragment_to_chatFragment2"
+            app:destination="@id/chatFragment" />
+        <action
+            android:id="@+id/action_addTaskFragment_to_addSubTaskFragment"
+            app:destination="@id/addSubTaskFragment" />
+        <action
+            android:id="@+id/action_addTaskFragment_to_subTaskFragment"
+            app:destination="@id/subTaskFragment" />
+        <action
+            android:id="@+id/action_addTaskFragment_to_ChatFragment"
+            app:destination="@id/chatFragment" />
+        <action
+            android:id="@+id/action_addTaskFragment_to_searchFragment2"
+            app:destination="@id/searchFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.taskmanagement.auth.ProfileFragment"
+        android:label="fragment_profile"
+        tools:layout="@layout/fragment_profile" >
+        <action
+            android:id="@+id/action_profileFragment_to_addTaskFragment"
+            app:destination="@id/addTaskFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_welcomeFragment"
+            app:destination="@id/welcomeFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_chatFragment"
+            app:destination="@id/chatFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_ChatFragment"
+            app:destination="@id/chatFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_searchFragment2"
+            app:destination="@id/searchFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/addSubTaskFragment"
+        android:name="com.example.taskmanagement.task.AddSubTaskFragment"
+        android:label="fragment_add_sub_task"
+        tools:layout="@layout/fragment_add_sub_task" >
+        <action
+            android:id="@+id/action_addSubTaskFragment_to_addTaskFragment"
+            app:destination="@id/addTaskFragment" />
+        <action
+            android:id="@+id/action_addSubTaskFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_addSubTaskFragment_to_subTaskFragment"
+            app:destination="@id/subTaskFragment" />
+        <action
+            android:id="@+id/action_addSubTaskFragment_to_subTaskFragment2"
+            app:destination="@id/subTaskFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/subTaskFragment"
+        android:name="com.example.taskmanagement.task.SubTaskFragment"
+        android:label="fragment_sub_task"
+        tools:layout="@layout/fragment_sub_task" >
+        <action
+            android:id="@+id/action_subTaskFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_subTaskFragment_to_addSubTaskFragment"
+            app:destination="@id/addSubTaskFragment" />
+        <action
+            android:id="@+id/action_subTaskFragment_to_homeFragment2"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_subTaskFragment_to_addSubTaskFragment2"
+            app:destination="@id/addSubTaskFragment" />
+        <action
+            android:id="@+id/action_subTaskFragment_to_searchFragment2"
+            app:destination="@id/searchFragment" />
+        <action
+            android:id="@+id/action_subTaskFragment_to_modifySubTaskFragment"
+            app:destination="@id/modifySubTaskFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="com.example.taskmanagement.chat.ChatFragment"
+        android:label="ChatFragment" >
+        <action
+            android:id="@+id/action_ChatFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_ChatFragment_to_addTaskFragment"
+            app:destination="@id/addTaskFragment" />
+        <action
+            android:id="@+id/action_ChatFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/userSelectionFragment"
+        android:name="com.example.taskmanagement.chat.UserSelectionFragment"
+        android:label="fragment_user_selection"
+        tools:layout="@layout/fragment_user_selection" >
+        <action
+            android:id="@+id/action_userSelectionFragment_to_chatFragment"
+            app:destination="@id/chatFragment" />
+        <action
+            android:id="@+id/action_userSelectionFragment_self"
+            app:destination="@id/userSelectionFragment" />
+        <action
+            android:id="@+id/action_userSelectionFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_userSelectionFragment_to_dialogFragment"
+            app:destination="@id/dialogFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/dialogFragment"
+        android:name="com.example.taskmanagement.chat.DialogFragment"
+        android:label="DialogFragment" >
+        <action
+            android:id="@+id/action_dialogFragment_to_chatFragment"
+            app:destination="@id/chatFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.example.taskmanagement.task.SearchFragment"
+        android:label="SearchFragment" >
+        <action
+            android:id="@+id/action_searchFragment2_to_nav_graph"
+            app:destination="@id/nav_graph" />
+        <action
+            android:id="@+id/action_searchFragment_to_searchSubFragment"
+            app:destination="@id/searchSubFragment" />
+        <action
+            android:id="@+id/action_searchFragment_to_modifySubTaskFragment"
+            app:destination="@id/modifySubTaskFragment" />
+        <action
+            android:id="@+id/action_searchFragment_to_modifyTaskFragment"
+            app:destination="@id/modifyTaskFragment" />
+        <action
+            android:id="@+id/action_searchFragment_to_modifyTaskFragment2"
+            app:destination="@id/modifyTaskFragment" />
+    </fragment><action android:id="@+id/action_global_searchFragment2" app:destination="@id/searchFragment"/>
+    <fragment
+        android:id="@+id/searchSubFragment"
+        android:name="com.example.taskmanagement.task.SearchSubFragment"
+        android:label="fragment_search_sub"
+        tools:layout="@layout/fragment_search_sub" >
+        <action
+            android:id="@+id/action_searchSubFragment_pop"
+            app:popUpTo="@id/searchSubFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_searchSubFragment_pop2"
+            app:popUpTo="@id/searchSubFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_searchSubFragment_self"
+            app:destination="@id/searchSubFragment" />
+        <action
+            android:id="@+id/action_searchSubFragment_to_nav_graph"
+            app:destination="@id/nav_graph" />
+        <action
+            android:id="@+id/action_searchSubFragment_to_modifySubTaskFragment"
+            app:destination="@id/modifySubTaskFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/modifyTaskFragment"
+        android:name="com.example.taskmanagement.task.ModifyTaskFragment"
+        android:label="fragment_modify_task"
+        tools:layout="@layout/fragment_modify_task" >
+        <action
+            android:id="@+id/action_modifyTaskFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_modifyTaskFragment_to_nav_graph"
+            app:destination="@id/nav_graph"
+            app:enterAnim="@anim/nav_default_pop_enter_anim"
+            app:exitAnim="@anim/nav_default_pop_exit_anim" />
+        <action
+            android:id="@+id/action_modifyTaskFragment_to_searchFragment"
+            app:destination="@id/searchFragment" />
+        <action
+            android:id="@+id/action_modifyTaskFragment_to_searchFragment2"
+            app:destination="@id/searchFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/modifySubTaskFragment"
+        android:name="com.example.taskmanagement.task.ModifySubTaskFragment"
+        android:label="fragment_modify_sub_task"
+        tools:layout="@layout/fragment_modify_sub_task" >
+        <action
+            android:id="@+id/action_modifySubTaskFragment_to_subTaskFragment"
+            app:destination="@id/subTaskFragment" />
+        <action
+            android:id="@+id/action_modifySubTaskFragment_to_searchSubFragment"
+            app:destination="@id/searchSubFragment" />
+        <action
+            android:id="@+id/action_modifySubTaskFragment_to_searchFragment"
+            app:destination="@id/searchFragment" />
+    </fragment>
+
+
+</navigation>
