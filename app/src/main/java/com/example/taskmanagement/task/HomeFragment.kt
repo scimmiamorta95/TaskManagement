@@ -113,18 +113,31 @@ class HomeFragment : Fragment() {
                 .get()
                 .await()
 
-            val allTasks = mutableListOf<QueryDocumentSnapshot>()
-            allTasks.addAll(createdByPMResult.documents as List<QueryDocumentSnapshot>)
+            // Inizializza una lista per i task
+            val allTasks = mutableListOf<Task>()
 
-            for (document in allTasks) {
+            // Processa i task creati dal Project Manager
+            createdByPMResult.documents.forEach { document ->
                 val task = document.toObject(Task::class.java)
-                taskList.add(task)
-                taskIdMap[task] = document.id
-
-                calculateSubTasks(task, document.id)
+                task?.let {
+                    allTasks.add(it)
+                    taskIdMap[it] = document.id
+                }
             }
 
-            if (isAdded) fabMain.visibility = View.VISIBLE
+            // Aggiorna i task aggiuntivi con il calcolo dei subtasks
+            for (task in allTasks) {
+                calculateSubTasks(task, taskIdMap[task] ?: return)
+            }
+
+            // Aggiungi i task caricati alla lista principale e aggiorna l'interfaccia utente
+            taskList.clear()
+            taskList.addAll(allTasks)
+
+            if (isAdded) {
+                fabMain.visibility = View.VISIBLE
+            }
+
         } catch (e: Exception) {
             if (isAdded) {
                 Toast.makeText(
@@ -135,6 +148,7 @@ class HomeFragment : Fragment() {
             }
         }
     }
+
 
 
     private suspend fun loadTasksForPL() {
@@ -150,23 +164,37 @@ class HomeFragment : Fragment() {
                 .get()
                 .await()
 
-            val allTasks = mutableListOf<QueryDocumentSnapshot>()
-            allTasks.addAll(createdByPLResult.documents as List<QueryDocumentSnapshot>)
-            allTasks.addAll(assignedToPLResult.documents as List<QueryDocumentSnapshot>)
+            val allTasks = mutableListOf<Task>()
 
-            for (document in allTasks) {
+            createdByPLResult.documents.forEach { document ->
                 val task = document.toObject(Task::class.java)
-
-
-                calculateSubTasks(task, document.id)
-
-                if (!taskIdMap.containsKey(task)) {
-                    taskList.add(task)
-                    taskIdMap[task] = document.id
+                task?.let {
+                    allTasks.add(it)
+                    taskIdMap[it] = document.id
                 }
             }
 
-            if (isAdded) fabMain.visibility = View.VISIBLE
+            assignedToPLResult.documents.forEach { document ->
+                val task = document.toObject(Task::class.java)
+                task?.let {
+                    if (!taskIdMap.containsKey(it)) {
+                        allTasks.add(it)
+                        taskIdMap[it] = document.id
+                    }
+                }
+            }
+
+            for (task in allTasks) {
+                calculateSubTasks(task, taskIdMap[task] ?: return)
+            }
+
+            taskList.clear()
+            taskList.addAll(allTasks)
+
+            if (isAdded) {
+                fabMain.visibility = View.VISIBLE
+            }
+
         } catch (e: Exception) {
             if (isAdded) {
                 Toast.makeText(
@@ -177,6 +205,7 @@ class HomeFragment : Fragment() {
             }
         }
     }
+
 
 
 
@@ -189,19 +218,31 @@ class HomeFragment : Fragment() {
                 .get()
                 .await()
 
-            val allTasks = mutableListOf<QueryDocumentSnapshot>()
-            allTasks.addAll(assignedToDevResult.documents as List<QueryDocumentSnapshot>)
+            // Inizializza una lista per i task
+            val allTasks = mutableListOf<Task>()
 
-            for (document in allTasks) {
+            // Processa i task assegnati al Developer
+            assignedToDevResult.documents.forEach { document ->
                 val task = document.toObject(Task::class.java)
-
-                calculateSubTasks(task, document.id)
-
-                taskList.add(task)
-                taskIdMap[task] = document.id
+                task?.let {
+                    allTasks.add(it)
+                    taskIdMap[it] = document.id
+                }
             }
 
-            if (isAdded) fabMain.visibility = View.VISIBLE
+            // Aggiorna i task aggiuntivi con il calcolo dei subtasks
+            for (task in allTasks) {
+                calculateSubTasks(task, taskIdMap[task] ?: return)
+            }
+
+            // Aggiungi i task caricati alla lista principale e aggiorna l'interfaccia utente
+            taskList.clear()
+            taskList.addAll(allTasks)
+
+            if (isAdded) {
+                fabMain.visibility = View.VISIBLE
+            }
+
         } catch (e: Exception) {
             if (isAdded) {
                 Toast.makeText(
@@ -212,6 +253,7 @@ class HomeFragment : Fragment() {
             }
         }
     }
+
 
 
     private suspend fun calculateSubTasks(task: Task, taskId: String) {

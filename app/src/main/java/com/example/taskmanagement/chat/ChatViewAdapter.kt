@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.taskmanagement.R
+import com.google.firebase.auth.FirebaseAuth
 
 class ChatViewAdapter(
     private val chatList: List<Chat>,
@@ -24,7 +25,12 @@ class ChatViewAdapter(
 
     override fun onBindViewHolder(holder: ChatViewHolder, position: Int) {
         val chat = chatList[position]
-        holder.chatName.text = chat.participants.joinToString(", ")
+        val currentUserEmail = FirebaseAuth.getInstance().currentUser?.email
+
+        val otherParticipant = chat.participants.firstOrNull { it != currentUserEmail }
+
+        holder.chatName.text = otherParticipant ?:
+                holder.itemView.context.getString(R.string.user_not_authenticated)
         holder.lastMessage.text =
             chat.lastMessage?.text ?: holder.itemView.context.getString(R.string.no_message)
 
@@ -32,6 +38,7 @@ class ChatViewAdapter(
             onChatClicked(chat)
         }
     }
+
 
     override fun getItemCount() = chatList.size
 }

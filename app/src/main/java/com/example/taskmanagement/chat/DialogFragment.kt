@@ -42,27 +42,55 @@ class DialogFragment : DialogFragment() {
 
 
     private fun loadUsers() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser == null) {
+            Toast.makeText(requireContext(), getString(R.string.error_loading_users), Toast.LENGTH_SHORT).show()
+            return
+        }
+
         firestore.collection("users")
+            .document(currentUser.uid)
             .get()
-            .addOnSuccessListener { documents ->
-                userList.clear()
-                for (document in documents) {
-                    val user = document.toObject(User::class.java)
-                    if (user.email != FirebaseAuth.getInstance().currentUser?.uid) {
-                        userList.add(user)
-                    }
+            .addOnSuccessListener { document ->
+                val currentUserRole = document.getString("role") ?: return@addOnSuccessListener
+
+                val rolesToLoad = when (currentUserRole) {
+                    "PM" -> listOf("PL")
+                    "PL" -> listOf("PM", "Dev")
+                    "Dev" -> listOf("PL", "Dev")
+                    else -> emptyList()
                 }
-                recyclerViewUsers.adapter?.notifyDataSetChanged()
+
+                firestore.collection("users")
+                    .whereIn("role", rolesToLoad)
+                    .get()
+                    .addOnSuccessListener { documents ->
+                        userList.clear()
+                        for (document in documents) {
+                            val user = document.toObject(User::class.java)
+                            if (user.email != currentUser.email) {
+                                userList.add(user)
+                            }
+                        }
+                        recyclerViewUsers.adapter?.notifyDataSetChanged()
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(
+                            requireContext(),
+                            getString(R.string.error_loading_users, e.message),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
             }
             .addOnFailureListener { e ->
                 Toast.makeText(
                     requireContext(),
-                    getString(R.string.error_loading_users, e.message),
+                    getString(R.string.error_loading_chats, e.message),
                     Toast.LENGTH_SHORT
                 ).show()
-
             }
     }
+
 
     private fun openChat(selectedUser: String) {
         val bundle = Bundle()

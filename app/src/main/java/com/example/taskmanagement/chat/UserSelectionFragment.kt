@@ -96,9 +96,34 @@ class UserSelectionFragment : Fragment() {
 
     private fun openChat(chat: Chat) {
         val currentUserId = currentUser?.email
-        val otherParticipant = chat.participants.firstOrNull { it != currentUserId }
+        if (currentUserId.isNullOrEmpty()) {
+            if (isAdded) {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.user_not_authenticated),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            return
+        }
 
-        if (otherParticipant == null) {
+        if (!chat.participants.contains(currentUserId)) {
+            if (isAdded) {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.user_not_found),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            return
+        }
+
+        val otherParticipant = chat.participants
+            .filter { it != currentUserId }
+            .sorted()
+            .joinToString("_")
+
+        if (otherParticipant.isEmpty()) {
             if (isAdded) {
                 Toast.makeText(
                     requireContext(),
@@ -112,26 +137,17 @@ class UserSelectionFragment : Fragment() {
         firestore.collection("users")
             .document(otherParticipant)
             .get()
-            .addOnSuccessListener { document ->
+            .addOnSuccessListener {
                 if (isAdded) {
-                    val otherUserRole = document.getString("role")
-                    val currentUserRole = fetchUserRole(currentUserId)
-
-                    if (canCommunicate(currentUserRole, otherUserRole)) {
-                        val bundle = Bundle().apply {
-                            putString("selectedUser", otherParticipant)
-                        }
-                        findNavController().navigate(
-                            R.id.action_userSelectionFragment_to_chatFragment,
-                            bundle
-                        )
-                    } else {
-                        Toast.makeText(
-                            requireContext(),
-                            getString(R.string.cannot_communicate),
-                            Toast.LENGTH_SHORT
-                        ).show()
+                    val chatUser = chat.participants.firstOrNull { it != currentUser?.email }
+                    val bundle = Bundle().apply {
+                        putString("selectedUser", chatUser)
                     }
+                    findNavController().navigate(
+                        R.id.action_userSelectionFragment_to_chatFragment,
+                        bundle
+                    )
+
                 }
             }
             .addOnFailureListener {
@@ -145,36 +161,4 @@ class UserSelectionFragment : Fragment() {
             }
     }
 
-    private fun canCommunicate(currentUserRole: String?, otherUserRole: String?): Boolean {
-        return when (currentUserRole) {
-            "PM" -> otherUserRole == "PL"
-            "PL" -> otherUserRole == "PM" || otherUserRole == "DEV"
-            "DEV" -> otherUserRole == "PL" || otherUserRole == "DEV"
-            else -> false
-        }
-    }
-
-    private fun fetchUserRole(userId: String?): String? {
-        var role: String? = null
-        if (userId.isNullOrEmpty()) return role
-
-        firestore.collection("users")
-            .document(userId)
-            .get()
-            .addOnSuccessListener { document ->
-                if (isAdded) {
-                    role = document.getString("role")
-                }
-            }
-            .addOnFailureListener {
-                if (isAdded) {
-                    Toast.makeText(
-                        requireContext(),
-                        getString(R.string.error_retrieving_role),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-        return role
-    }
 }
