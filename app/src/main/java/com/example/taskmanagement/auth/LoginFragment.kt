@@ -126,6 +126,8 @@ class LoginFragment : Fragment() {
                                         requireContext(), getString(R.string.login_succeffully),
                                         Toast.LENGTH_SHORT
                                     ).show()
+                                    val role = document.getString("role")
+                                    saveUserRoleLocally(role)
                                     findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
                                 }
                             } else {
@@ -159,6 +161,14 @@ class LoginFragment : Fragment() {
         editor.putString("user", userJson)
         editor.apply()
     }
+    private fun saveUserRoleLocally(role: String?) {
+        val sharedPreferences =
+            requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("role", role)
+        editor.apply()
+    }
+
 
     private fun init() {
         mAuth = FirebaseAuth.getInstance()

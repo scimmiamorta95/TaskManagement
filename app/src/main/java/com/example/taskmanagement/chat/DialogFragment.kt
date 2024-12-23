@@ -1,5 +1,6 @@
 package com.example.taskmanagement.chat
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -51,8 +52,9 @@ class DialogFragment : DialogFragment() {
         firestore.collection("users")
             .document(currentUser.uid)
             .get()
-            .addOnSuccessListener { document ->
-                val currentUserRole = document.getString("role") ?: return@addOnSuccessListener
+            .addOnSuccessListener {
+                val sharedPrefs = requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+                val currentUserRole = sharedPrefs.getString("role", "defaultRole")?: return@addOnSuccessListener
 
                 val rolesToLoad = when (currentUserRole) {
                     "PM" -> listOf("PL")

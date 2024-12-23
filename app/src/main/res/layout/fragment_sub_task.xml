@@ -9,19 +9,34 @@
     android:fitsSystemWindows="true"
     tools:context=".task.SubTaskFragment">
 
+    <!-- Freccia per tornare indietro a sinistra del titolo -->
+
+    <ImageView
+        android:id="@+id/backArrow"
+        android:layout_width="32dp"
+        android:layout_height="31dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="22dp"
+        android:clickable="true"
+        android:contentDescription="back"
+        android:focusable="true"
+        android:gravity="center_horizontal"
+        android:src="@drawable/baseline_arrow_back_24"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/fragmentTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="16dp"
         android:gravity="start"
         android:text="@string/subtask"
         android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
         android:textColor="@android:color/black"
         android:textSize="32sp"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/backArrow"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -29,7 +44,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="5dp"
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavMenu"
         app:layout_constraintEnd_toEndOf="parent"
@@ -93,7 +108,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Non ci sono subtasks presenti! 😁"
+        android:text="@string/non_ci_sono_subtasks_presenti"
         android:textColor="@android:color/black"
         android:textSize="18sp"
         android:visibility="gone"
@@ -101,6 +116,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

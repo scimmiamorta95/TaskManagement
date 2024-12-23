@@ -166,5 +166,14 @@
     <string name="unknown">Unknown</string>
     <string name="please_fill_all_fields">Please, fill all fields!</string>
     <string name="error_calculating_subtask_progress">Error while calculating subtask progress. Please try again later.</string>
+    <string name="find_tasks">Search Tasks by: Name, Description, Deadline, Status, Assigned to</string>
+    <string name="error_loading_last_message">Error loading the last message: %1$s</string>
+    <string name="error_clearing_cache">Error clearing cache: %1$s</string>
+    <string name="files_deleted_successfully">Files successfully deleted</string>
+    <string name="no_files_to_delete">No files to delete</string>
+    <string name="error_deleting_files">Error deleting files</string>
+    <string name="no_chats_present">No chat present, start chatting!</string>
+
+
 
 </resources>

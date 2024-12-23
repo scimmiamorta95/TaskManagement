@@ -35,7 +35,7 @@ class TaskAdapter(
 
     override fun getItemCount(): Int = taskList.size
 
-    fun updateTasks(newTaskList: List<Task>) {
+    private fun updateTasks(newTaskList: List<Task>) {
         val diffCallback = TaskDiffCallback(taskList, newTaskList)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
 

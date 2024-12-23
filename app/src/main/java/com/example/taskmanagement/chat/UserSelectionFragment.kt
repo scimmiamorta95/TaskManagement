@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -22,6 +23,7 @@ class UserSelectionFragment : Fragment() {
     private val currentUser = FirebaseAuth.getInstance().currentUser
     private val chatList = mutableListOf<Chat>()
     private lateinit var chatAdapter: ChatViewAdapter
+    private lateinit var noChatsMessage: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,6 +33,7 @@ class UserSelectionFragment : Fragment() {
 
         recyclerViewChats = view.findViewById(R.id.recyclerViewChats)
         btnNewChat = view.findViewById(R.id.newChatButton)
+        noChatsMessage= view.findViewById(R.id.noChatsMessage)
 
         setupRecyclerView()
         loadChats()
@@ -74,13 +77,21 @@ class UserSelectionFragment : Fragment() {
             .addOnSuccessListener { documents ->
                 if (isAdded) {
                     chatList.clear()
-                    for (document in documents) {
-                        val chat = document.toObject(Chat::class.java).apply {
-                            id = document.id
+                    if (documents.isEmpty) {
+                        noChatsMessage.visibility = View.VISIBLE
+                        recyclerViewChats.visibility = View.GONE
+                    } else {
+                        noChatsMessage.visibility = View.GONE
+                        recyclerViewChats.visibility = View.VISIBLE
+
+                        for (document in documents) {
+                            val chat = document.toObject(Chat::class.java).apply {
+                                id = document.id
+                            }
+                            loadLastMessage(chat)
                         }
-                        chatList.add(chat)
                     }
-                    chatAdapter.notifyDataSetChanged()
+
                 }
             }
             .addOnFailureListener { e ->
@@ -93,6 +104,37 @@ class UserSelectionFragment : Fragment() {
                 }
             }
     }
+
+    private fun loadLastMessage(chat: Chat) {
+        firestore.collection("chats")
+            .document(chat.id)
+            .collection("messages")
+            .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { messages ->
+                if (isAdded) {
+                    if (!messages.isEmpty) {
+                        val lastMessage = messages.documents[0].toObject(Message::class.java)
+                        chat.lastMessage = lastMessage
+                    }
+                    chatList.add(chat)
+                    chatAdapter.notifyDataSetChanged()
+                }
+            }
+            .addOnFailureListener { e ->
+                if (isAdded) {
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.error_loading_last_message, e.message ?: "Unknown error"),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+    }
+
+
+
 
     private fun openChat(chat: Chat) {
         val currentUserId = currentUser?.email

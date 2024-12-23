@@ -147,5 +147,13 @@
     <string name="unknown">Sconosciuto</string>
     <string name="please_fill_all_fields">Per favore, inserisci tutti i campi!</string>
     <string name="error_calculating_subtask_progress">Errore durante il calcolo dell\'avanzamento dell\'attività secondaria. Per favore riprova più tardi.</string>
+    <string name="find_tasks">Cerca Task per: Nome, Descrizione, Scadenza, Stato, Assegnato a</string>
+    <string name="error_loading_last_message">Errore durante il caricamento dell\'ultimo messaggio: %1$s</string>
+    <string name="error_clearing_cache">Errore durante la pulizia della cache: %1$s</string>
+    <string name="files_deleted_successfully">File eliminati con successo</string>
+    <string name="no_files_to_delete">Nessun file da eliminare</string>
+    <string name="error_deleting_files">Errore durante l\'eliminazione dei file</string>
+    <string name="no_chats_present">Nessuna chat presente, inizia a chattare!</string>
+
 
 </resources>

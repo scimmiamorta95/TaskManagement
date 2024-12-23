@@ -1,12 +1,11 @@
 package com.example.taskmanagement.task
 
-
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -14,17 +13,19 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.taskmanagement.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QueryDocumentSnapshot
+import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.io.File
 
 class HomeFragment : Fragment() {
 
     private lateinit var taskRecyclerView: RecyclerView
-    private lateinit var progressBar: ProgressBar
     private lateinit var taskAdapter: TaskAdapter
     private lateinit var fabMain: com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -33,6 +34,8 @@ class HomeFragment : Fragment() {
     private val auth = FirebaseAuth.getInstance()
 
     private lateinit var noTasksMessage: TextView
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private val taskIdMap = mutableMapOf<String, String>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,9 +43,9 @@ class HomeFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
         taskRecyclerView = view.findViewById(R.id.task_list)
-        progressBar = view.findViewById(R.id.progressBar)
         fabMain = view.findViewById(R.id.fab_main)
         noTasksMessage = view.findViewById(R.id.noTasksMessage)
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout)
 
         taskRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         taskAdapter =
@@ -51,23 +54,37 @@ class HomeFragment : Fragment() {
 
         val currentUser = auth.currentUser
         if (currentUser != null) {
-            loadTasks(currentUser.uid)
+            loadTasksFromFile()
+            if (taskList.isEmpty()) {
+                loadTasks()
+            }
+        } else {
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.failed_to_load_tasks),
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
         fabMain.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_addTaskFragment)
         }
 
+        swipeRefreshLayout.setOnRefreshListener {
+            currentUser?.let {
+                loadTasks()
+            }
+        }
+
         return view
     }
 
-    private fun loadTasks(userId: String) {
-        progressBar.visibility = View.VISIBLE
+    private fun loadTasks() {
+        swipeRefreshLayout.isRefreshing = true
         lifecycleScope.launch {
             try {
-                val document = firestore.collection("users").document(userId).get().await()
-                val role = document.getString("role")
-
+                val sharedPrefs = requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+                val role = sharedPrefs.getString("role", "defaultRole")
                 taskList.clear()
                 taskIdMap.clear()
 
@@ -78,12 +95,9 @@ class HomeFragment : Fragment() {
                 }
 
                 if (isAdded) {
-                    if (taskList.isEmpty()) {
-                        noTasksMessage.visibility = View.VISIBLE
-                    } else {
-                        noTasksMessage.visibility = View.GONE
-                    }
+                    noTasksMessage.visibility = if (taskList.isEmpty()) View.VISIBLE else View.GONE
                 }
+                saveTasksToFile()
 
             } catch (e: Exception) {
                 if (isAdded) {
@@ -95,48 +109,33 @@ class HomeFragment : Fragment() {
                 }
             } finally {
                 if (isAdded) {
-                    progressBar.visibility = View.GONE
+                    swipeRefreshLayout.isRefreshing = false
                     taskAdapter.notifyDataSetChanged()
                 }
             }
         }
     }
 
-    private val taskIdMap = mutableMapOf<Task, String>()
-
     private suspend fun loadTasksForPM() {
+        fabMain.visibility = View.VISIBLE
         try {
             val currentUserEmail = auth.currentUser?.email ?: return
-
             val createdByPMResult = firestore.collection("tasks")
                 .whereEqualTo("createdBy", currentUserEmail)
                 .get()
                 .await()
 
-            // Inizializza una lista per i task
-            val allTasks = mutableListOf<Task>()
-
-            // Processa i task creati dal Project Manager
-            createdByPMResult.documents.forEach { document ->
+            for (document in createdByPMResult.documents) {
                 val task = document.toObject(Task::class.java)
-                task?.let {
-                    allTasks.add(it)
-                    taskIdMap[it] = document.id
+                if (task != null) {
+                    calculateSubTasks(task, document.id)
+                    taskList.add(task)
+                    taskIdMap[task.name] = document.id
                 }
             }
+            taskList.sortBy { it.name }
 
-            // Aggiorna i task aggiuntivi con il calcolo dei subtasks
-            for (task in allTasks) {
-                calculateSubTasks(task, taskIdMap[task] ?: return)
-            }
-
-            // Aggiungi i task caricati alla lista principale e aggiorna l'interfaccia utente
-            taskList.clear()
-            taskList.addAll(allTasks)
-
-            if (isAdded) {
-                fabMain.visibility = View.VISIBLE
-            }
+            if (isAdded) fabMain.visibility = View.VISIBLE
 
         } catch (e: Exception) {
             if (isAdded) {
@@ -149,11 +148,11 @@ class HomeFragment : Fragment() {
         }
     }
 
-
-
     private suspend fun loadTasksForPL() {
+        fabMain.visibility = View.VISIBLE
         try {
             val currentUserEmail = auth.currentUser?.email ?: return
+
             val createdByPLResult = firestore.collection("tasks")
                 .whereEqualTo("createdBy", currentUserEmail)
                 .get()
@@ -164,37 +163,18 @@ class HomeFragment : Fragment() {
                 .get()
                 .await()
 
-            val allTasks = mutableListOf<Task>()
-
-            createdByPLResult.documents.forEach { document ->
+            for (document in createdByPLResult.documents + assignedToPLResult.documents) {
                 val task = document.toObject(Task::class.java)
-                task?.let {
-                    allTasks.add(it)
-                    taskIdMap[it] = document.id
-                }
-            }
-
-            assignedToPLResult.documents.forEach { document ->
-                val task = document.toObject(Task::class.java)
-                task?.let {
-                    if (!taskIdMap.containsKey(it)) {
-                        allTasks.add(it)
-                        taskIdMap[it] = document.id
+                if (task != null) {
+                    calculateSubTasks(task, document.id)
+                    if (!taskIdMap.containsKey(task.name)) {
+                        taskList.add(task)
+                        taskIdMap[task.name] = document.id
                     }
                 }
             }
 
-            for (task in allTasks) {
-                calculateSubTasks(task, taskIdMap[task] ?: return)
-            }
-
-            taskList.clear()
-            taskList.addAll(allTasks)
-
-            if (isAdded) {
-                fabMain.visibility = View.VISIBLE
-            }
-
+            taskList.sortBy { it.name }
         } catch (e: Exception) {
             if (isAdded) {
                 Toast.makeText(
@@ -206,43 +186,27 @@ class HomeFragment : Fragment() {
         }
     }
 
-
-
-
-
     private suspend fun loadTasksForDev() {
+        fabMain.visibility = View.GONE
         try {
             val currentUserEmail = auth.currentUser?.email ?: return
+
             val assignedToDevResult = firestore.collection("tasks")
                 .whereEqualTo("assignedTo", currentUserEmail)
                 .get()
                 .await()
 
-            // Inizializza una lista per i task
-            val allTasks = mutableListOf<Task>()
-
-            // Processa i task assegnati al Developer
-            assignedToDevResult.documents.forEach { document ->
+            for (document in assignedToDevResult.documents) {
                 val task = document.toObject(Task::class.java)
-                task?.let {
-                    allTasks.add(it)
-                    taskIdMap[it] = document.id
+                if (task != null) {
+                    calculateSubTasks(task, document.id)
+                    taskList.add(task)
+                    taskIdMap[task.name] = document.id
                 }
             }
 
-            // Aggiorna i task aggiuntivi con il calcolo dei subtasks
-            for (task in allTasks) {
-                calculateSubTasks(task, taskIdMap[task] ?: return)
-            }
-
-            // Aggiungi i task caricati alla lista principale e aggiorna l'interfaccia utente
-            taskList.clear()
-            taskList.addAll(allTasks)
-
-            if (isAdded) {
-                fabMain.visibility = View.VISIBLE
-            }
-
+            taskList.sortBy { it.name }
+            if (isAdded) fabMain.visibility = View.VISIBLE
         } catch (e: Exception) {
             if (isAdded) {
                 Toast.makeText(
@@ -253,8 +217,6 @@ class HomeFragment : Fragment() {
             }
         }
     }
-
-
 
     private suspend fun calculateSubTasks(task: Task, taskId: String) {
         try {
@@ -264,12 +226,8 @@ class HomeFragment : Fragment() {
                 .get()
                 .await()
 
-            val progressList = mutableListOf<Int>()
-            for (subTaskDocument in subTasksResult) {
-                val subTask = subTaskDocument.toObject(SubTask::class.java)
-                progressList.add(subTask.progress)
-                Log.d("TaskAdapter", "Subtask progress: ${subTask.progress}")
-            }
+            val progressList =
+                subTasksResult.mapNotNull { it.toObject(SubTask::class.java).progress }
 
             val averageProgress = if (progressList.isNotEmpty()) {
                 progressList.average().toInt()
@@ -287,23 +245,111 @@ class HomeFragment : Fragment() {
                 Toast.LENGTH_SHORT
             ).show()
         }
+    }
 
+    private fun saveTasksToFile() {
+        val tasksJson = Gson().toJson(taskList)
+        val taskIdMapJson = Gson().toJson(taskIdMap)
+
+        val tasksFile = File(requireContext().filesDir, "taskList.json")
+        tasksFile.writeText(tasksJson)
+
+        val taskIdMapFile = File(requireContext().filesDir, "taskIdMap.json")
+        taskIdMapFile.writeText(taskIdMapJson)
+
+        Log.d("SearchFragment", "Saved taskList and taskIdMap separately")
     }
 
 
+    private fun loadTasksFromFile() {
+        val tasksFile = File(requireContext().filesDir, "taskList.json")
+        val taskIdMapFile = File(requireContext().filesDir, "taskIdMap.json")
+
+        if (tasksFile.exists() && taskIdMapFile.exists()) {
+            try {
+                val tasksJson = tasksFile.readText()
+                val taskIdMapJson = taskIdMapFile.readText()
+
+                val savedTasks = Gson().fromJson(tasksJson, Array<Task>::class.java).toList()
+                val savedTaskIdMap = Gson().fromJson(taskIdMapJson, Map::class.java)
+
+                taskList.clear()
+                taskList.addAll(savedTasks)
+                taskIdMap.clear()
+
+                savedTaskIdMap.entries.forEach {
+                    taskIdMap[it.key as String] = it.value as String
+                }
+
+                taskAdapter.notifyDataSetChanged()
+
+            } catch (e: JsonSyntaxException) {
+                Log.e("SearchFragment", "Error loading tasks: ${e.message}")
+                e.printStackTrace()
+            }
+        }
+    }
+
     private fun onTaskClick(task: Task) {
-        val taskId = taskIdMap[task]
+        val sharedPrefs =
+            requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+        val role = sharedPrefs.getString("role", "defaultRole")
+        Log.d("HomeFragment", "Role: $role")
+
+        if (role == "PM") {
+            return
+        }
+        val taskId = taskIdMap[task.name]
         val bundle = Bundle().apply {
             putString("taskId", taskId)
         }
         findNavController().navigate(R.id.action_homeFragment_to_subTaskFragment, bundle)
     }
 
+
     private fun onEditTask(task: Task) {
-        val taskId = taskIdMap[task]
+        val taskId = taskIdMap[task.name]
         val bundle = Bundle().apply {
             putString("taskId", taskId)
         }
         findNavController().navigate(R.id.action_homeFragment_to_modifyTaskFragment, bundle)
     }
+
+    companion object {
+        fun deleteSavedTasksFiles(context: Context) {
+            try {
+                val tasksFile = File(context.filesDir, "taskList.json")
+                val taskIdMapFile = File(context.filesDir, "taskIdMap.json")
+
+                var deletedFilesCount = 0
+                if (tasksFile.exists()) {
+                    tasksFile.delete()
+                    deletedFilesCount++
+                }
+                if (taskIdMapFile.exists()) {
+                    taskIdMapFile.delete()
+                    deletedFilesCount++
+                }
+
+                val message = if (deletedFilesCount > 0) {
+                    context.getString(R.string.files_deleted_successfully)
+                } else {
+                    context.getString(R.string.no_files_to_delete)
+                }
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+
+                Log.d("HomeFragment", "Saved files deleted successfully")
+            } catch (e: Exception) {
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.error_deleting_files),
+                    Toast.LENGTH_SHORT
+                ).show()
+                Log.e("HomeFragment", "Error deleting saved files: ${e.message}")
+                e.printStackTrace()
+            }
+        }
+    }
+
 }
+

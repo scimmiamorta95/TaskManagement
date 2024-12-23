@@ -188,7 +188,7 @@ class ChatFragment : Fragment() {
                     Log.d("ChatFragment", "Chat with ID: $chatId already exists.")
                 } else {
                     val participants =
-                        listOf(currentUserId, receiverId).sorted() // Ordina i partecipanti
+                        listOf(currentUserId, receiverId).sorted()
                     val chatData = hashMapOf(
                         "participants" to participants
                     )

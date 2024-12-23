@@ -1,5 +1,6 @@
 package com.example.taskmanagement.task
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,13 +14,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.taskmanagement.R
-
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QueryDocumentSnapshot
+import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.io.File
 
 class SearchFragment : Fragment() {
 
@@ -30,6 +33,8 @@ class SearchFragment : Fragment() {
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private lateinit var noTasksMessage: TextView
+    private lateinit var swipeRefreshSearch: SwipeRefreshLayout
+    private val taskIdMap = mutableMapOf<String, String>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,8 +42,9 @@ class SearchFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_search, container, false)
         searchView = view.findViewById(R.id.search_view)
-        recyclerView = view.findViewById(R.id.recycler_view)
+        recyclerView = view.findViewById(R.id.searchList)
         noTasksMessage = view.findViewById(R.id.noTasksMessage)
+        swipeRefreshSearch = view.findViewById(R.id.swipeRefreshSearch)
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         taskAdapter =
@@ -47,7 +53,31 @@ class SearchFragment : Fragment() {
 
         val currentUser = auth.currentUser
         if (currentUser != null) {
-            loadTasks(currentUser.uid)
+
+            loadTasksFromFile()
+
+            if (taskList.isEmpty()) {
+                loadTasks()
+            }
+        } else {
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.failed_to_load_tasks),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        swipeRefreshSearch.setOnRefreshListener {
+            val currentUsers = auth.currentUser
+            if (currentUsers != null) {
+                loadTasks()
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.failed_to_load_tasks),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -64,11 +94,14 @@ class SearchFragment : Fragment() {
         return view
     }
 
-    private fun loadTasks(userId: String) {
+    private fun loadTasks() {
+        if (!swipeRefreshSearch.isRefreshing) {
+            swipeRefreshSearch.isRefreshing = true
+        }
         lifecycleScope.launch {
             try {
-                val document = firestore.collection("users").document(userId).get().await()
-                val role = document.getString("role")
+                val sharedPrefs = requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+                val role = sharedPrefs.getString("role", "defaultRole")
 
                 taskList.clear()
                 taskIdMap.clear()
@@ -81,12 +114,13 @@ class SearchFragment : Fragment() {
 
                 if (isAdded) {
                     if (taskList.isEmpty()) {
-
                         noTasksMessage.visibility = View.VISIBLE
                     } else {
                         noTasksMessage.visibility = View.GONE
                     }
                 }
+
+                saveTasksToFile()
 
             } catch (e: Exception) {
                 if (isAdded) {
@@ -98,13 +132,13 @@ class SearchFragment : Fragment() {
                 }
             } finally {
                 if (isAdded) {
+                    swipeRefreshSearch.isRefreshing = false
                     taskAdapter.notifyDataSetChanged()
                 }
             }
         }
     }
 
-    private val taskIdMap = mutableMapOf<Task, String>()
 
     private suspend fun loadTasksForPM() {
         try {
@@ -115,17 +149,15 @@ class SearchFragment : Fragment() {
                 .get()
                 .await()
 
-            val allTasks = mutableListOf<QueryDocumentSnapshot>()
-            allTasks.addAll(createdByPMResult.documents as List<QueryDocumentSnapshot>)
-
-            for (document in allTasks) {
+            for (document in createdByPMResult.documents) {
                 val task = document.toObject(Task::class.java)
-                taskList.add(task)
-                taskIdMap[task] = document.id
-
-                calculateSubTasks(task, document.id)
+                if (task != null) {
+                    taskList.add(task)
+                    taskIdMap[task.name] = document.id
+                    calculateSubTasks(task, document.id)
+                }
+                taskList.sortBy { it.name }
             }
-
         } catch (e: Exception) {
             if (isAdded) {
                 Toast.makeText(
@@ -141,6 +173,7 @@ class SearchFragment : Fragment() {
     private suspend fun loadTasksForPL() {
         try {
             val currentUserEmail = auth.currentUser?.email ?: return
+
             val createdByPLResult = firestore.collection("tasks")
                 .whereEqualTo("createdBy", currentUserEmail)
                 .get()
@@ -151,21 +184,17 @@ class SearchFragment : Fragment() {
                 .get()
                 .await()
 
-            val allTasks = mutableListOf<QueryDocumentSnapshot>()
-            allTasks.addAll(createdByPLResult.documents as List<QueryDocumentSnapshot>)
-            allTasks.addAll(assignedToPLResult.documents as List<QueryDocumentSnapshot>)
-
-            for (document in allTasks) {
+            for (document in createdByPLResult.documents + assignedToPLResult.documents) {
                 val task = document.toObject(Task::class.java)
-
-
-                calculateSubTasks(task, document.id)
-
-                if (!taskIdMap.containsKey(task)) {
-                    taskList.add(task)
-                    taskIdMap[task] = document.id
+                if (task != null) {
+                    calculateSubTasks(task, document.id)
+                    if (!taskIdMap.containsKey(task.name)) {
+                        taskList.add(task)
+                        taskIdMap[task.name] = document.id
+                    }
                 }
             }
+            taskList.sortBy { it.name }
         } catch (e: Exception) {
             if (isAdded) {
                 Toast.makeText(
@@ -177,27 +206,24 @@ class SearchFragment : Fragment() {
         }
     }
 
-
     private suspend fun loadTasksForDev() {
         try {
             val currentUserEmail = auth.currentUser?.email ?: return
+
             val assignedToDevResult = firestore.collection("tasks")
                 .whereEqualTo("assignedTo", currentUserEmail)
                 .get()
                 .await()
 
-            val allTasks = mutableListOf<QueryDocumentSnapshot>()
-            allTasks.addAll(assignedToDevResult.documents as List<QueryDocumentSnapshot>)
-
-            for (document in allTasks) {
+            for (document in assignedToDevResult.documents) {
                 val task = document.toObject(Task::class.java)
-
-                calculateSubTasks(task, document.id)
-
-                taskList.add(task)
-                taskIdMap[task] = document.id
+                if (task != null) {
+                    calculateSubTasks(task, document.id)
+                    taskList.add(task)
+                    taskIdMap[task.name] = document.id
+                }
             }
-
+            taskList.sortBy { it.name }
         } catch (e: Exception) {
             if (isAdded) {
                 Toast.makeText(
@@ -208,7 +234,6 @@ class SearchFragment : Fragment() {
             }
         }
     }
-
 
     private suspend fun calculateSubTasks(task: Task, taskId: String) {
         try {
@@ -241,12 +266,54 @@ class SearchFragment : Fragment() {
                 Toast.LENGTH_SHORT
             ).show()
         }
+    }
 
+    private fun saveTasksToFile() {
+        val tasksJson = Gson().toJson(taskList)
+        val taskIdMapJson = Gson().toJson(taskIdMap)
+
+        val tasksFile = File(requireContext().filesDir, "taskList.json")
+        tasksFile.writeText(tasksJson)
+
+        val taskIdMapFile = File(requireContext().filesDir, "taskIdMap.json")
+        taskIdMapFile.writeText(taskIdMapJson)
+
+        Log.d("SearchFragment", "Saved taskList and taskIdMap separately")
     }
 
 
+    private fun loadTasksFromFile() {
+        val tasksFile = File(requireContext().filesDir, "taskList.json")
+        val taskIdMapFile = File(requireContext().filesDir, "taskIdMap.json")
+
+        if (tasksFile.exists() && taskIdMapFile.exists()) {
+            try {
+                val tasksJson = tasksFile.readText()
+                val taskIdMapJson = taskIdMapFile.readText()
+
+                val savedTasks = Gson().fromJson(tasksJson, Array<Task>::class.java).toList()
+                val savedTaskIdMap = Gson().fromJson(taskIdMapJson, Map::class.java)
+
+                taskList.clear()
+                taskList.addAll(savedTasks)
+                taskIdMap.clear()
+
+                savedTaskIdMap.entries.forEach {
+                    taskIdMap[it.key as String] = it.value as String
+                }
+
+                taskAdapter.notifyDataSetChanged()
+
+            } catch (e: JsonSyntaxException) {
+                Log.e("SearchFragment", "Error loading tasks: ${e.message}")
+                e.printStackTrace()
+            }
+        }
+    }
+
     private fun onTaskClick(task: Task) {
-        val taskId = taskIdMap[task]
+        val taskId = taskIdMap[task.name]
+        Log.e("SearchFragment", "Task ID: $taskId")
         val bundle = Bundle().apply {
             putString("taskId", taskId)
         }
@@ -254,7 +321,7 @@ class SearchFragment : Fragment() {
     }
 
     private fun onEditTask(task: Task) {
-        val taskId = taskIdMap[task]
+        val taskId = taskIdMap[task.name]
         val bundle = Bundle().apply {
             putString("taskId", taskId)
         }

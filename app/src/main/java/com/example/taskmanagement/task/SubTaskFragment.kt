@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -52,6 +53,12 @@ class SubTaskFragment : Fragment() {
             loadSubtasks(taskID!!)
         }
 
+        val backArrow: ImageView = view.findViewById(R.id.backArrow)
+        backArrow.setOnClickListener {
+            findNavController().popBackStack()
+        }
+
+
 
         return view
     }
@@ -90,7 +97,6 @@ class SubTaskFragment : Fragment() {
     private fun loadSubtasks(taskId: String) {
         progressBar.visibility = View.VISIBLE
         subtaskRecyclerView.visibility = View.VISIBLE
-
         lifecycleScope.launch {
             try {
                 val result = firestore.collection("tasks")
@@ -107,8 +113,9 @@ class SubTaskFragment : Fragment() {
                     subtaskIdMap[subTask] = document.id
                     subtaskList.add(subTask)
                 }
-
+                subtaskList.sortBy { it.name }
                 subtaskAdapter.updateSubTasks(subtaskList)
+
 
                 val noSubtasksMessage: TextView =
                     view?.findViewById(R.id.no_subtasks_message) ?: return@launch
