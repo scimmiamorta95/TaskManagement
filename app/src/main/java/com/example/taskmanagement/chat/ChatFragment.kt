@@ -15,7 +15,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.taskmanagement.MainActivity
 import com.example.taskmanagement.R
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
@@ -73,6 +75,8 @@ class ChatFragment : Fragment() {
         createChat()
 
         nameChatTextView.text = receiverId
+        (activity as? MainActivity)?.hideBottomNavigation()
+
 
         buttonBack.setOnClickListener {
             findNavController().navigateUp()
@@ -80,7 +84,6 @@ class ChatFragment : Fragment() {
 
         return view
     }
-
 
     private fun setupRecyclerView() {
         adapter = ChatAdapter(currentUserId)

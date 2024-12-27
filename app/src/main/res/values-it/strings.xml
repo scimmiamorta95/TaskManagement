@@ -154,6 +154,14 @@
     <string name="no_files_to_delete">Nessun file da eliminare</string>
     <string name="error_deleting_files">Errore durante l\'eliminazione dei file</string>
     <string name="no_chats_present">Nessuna chat presente, inizia a chattare!</string>
-
-
+    <string name="edit_profile">Modifica Profilo</string>
+    <string name="first_name">Nome</string>
+    <string name="last_name">Cognome</string>
+    <string name="street">Via</string>
+    <string name="skills">Competenze</string>
+    <string name="save_profile">Salva Profilo</string>
+    <string name="error_loading_tasks">Errore nel caricamento dei task</string>
+    <string name="permission_denied">Permesso negato</string>
+    <string name="image_loading_error">Errore nel caricamento dell\'immagine</string>
+    <string name="logout_success">Logout effettuato</string>
 </resources>

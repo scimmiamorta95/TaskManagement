@@ -1,6 +1,7 @@
 package com.example.taskmanagement.task
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -69,7 +70,6 @@ class SearchSubFragment : Fragment() {
 
     private fun loadSubtasks(taskId: String) {
         subtaskRecyclerView.visibility = View.VISIBLE
-
         lifecycleScope.launch {
             try {
                 val result = firestore.collection("tasks")
@@ -78,15 +78,17 @@ class SearchSubFragment : Fragment() {
                     .get()
                     .await()
 
+                Log.d("SubTaskFragment", "Firestore result size: ${result.size()}")
+
                 subtaskList.clear()
                 for (document in result) {
                     val subTask = document.toObject(SubTask::class.java)
                     subtaskIdMap[subTask] = document.id
                     subtaskList.add(subTask)
                 }
-
                 subtaskList.sortBy { it.name }
                 subtaskAdapter.updateSubTasks(subtaskList)
+
 
                 val noSubtasksMessage: TextView =
                     view?.findViewById(R.id.no_subtasks_message) ?: return@launch

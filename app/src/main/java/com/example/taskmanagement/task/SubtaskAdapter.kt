@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat.getString
 import androidx.recyclerview.widget.RecyclerView
 import com.example.taskmanagement.R
 import com.google.firebase.firestore.FirebaseFirestore
@@ -84,12 +85,7 @@ class SubtaskAdapter(
             }
             subtaskDeadline.text = subtask.deadline
             subtaskDaysRemaining.text = subtask.deadline
-            subtaskState.text = when (subtask.status) {
-                "Todo" -> itemView.context.getString(R.string.todo)
-                "Assigned" -> itemView.context.getString(R.string.assigned)
-                "Completed" -> itemView.context.getString(R.string.completed)
-                else -> itemView.context.getString(R.string.unknown)
-            }
+            subtaskState.text = subtask.status
             val daysRemaining = calculateDaysRemaining(subtask.deadline)
             val formattedText = itemView.context.getString(R.string.days_remaining, daysRemaining)
             subtaskDaysRemaining.text = formattedText

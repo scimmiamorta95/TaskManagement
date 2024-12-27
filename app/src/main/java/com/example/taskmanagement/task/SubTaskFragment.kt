@@ -95,7 +95,6 @@ class SubTaskFragment : Fragment() {
     private val subtaskIdMap = mutableMapOf<SubTask, String>()
 
     private fun loadSubtasks(taskId: String) {
-        progressBar.visibility = View.VISIBLE
         subtaskRecyclerView.visibility = View.VISIBLE
         lifecycleScope.launch {
             try {
@@ -128,8 +127,6 @@ class SubTaskFragment : Fragment() {
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to load subtasks", Toast.LENGTH_SHORT)
                     .show()
-            } finally {
-                progressBar.visibility = View.GONE
             }
         }
     }

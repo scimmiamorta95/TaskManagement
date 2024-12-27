@@ -33,4 +33,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun hideBottomNavigation() {
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavMenu)
+        bottomNavigationView.visibility = android.view.View.GONE
+    }
+
+
+    fun showBottomNavigation() {
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavMenu)
+        bottomNavigationView.visibility = android.view.View.VISIBLE
+    }
+
 }

@@ -173,7 +173,17 @@
     <string name="no_files_to_delete">No files to delete</string>
     <string name="error_deleting_files">Error deleting files</string>
     <string name="no_chats_present">No chat present, start chatting!</string>
-
+    <string name="edit_profile">Edit Profile</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="street">Street</string>
+    <string name="skills">Skills</string>
+    <string name="save_profile">Save Profile</string>
+    <string name="user_name" translatable="false">%1$s %2$s</string>
+    <string name="error_loading_tasks">Error loading tasks</string>
+    <string name="permission_denied">Permission denied</string>
+    <string name="image_loading_error">Image error loading</string>
+    <string name="logout_success">Logout success!</string>
 
 
 </resources>
