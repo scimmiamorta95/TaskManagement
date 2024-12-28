@@ -1,5 +1,6 @@
 package com.example.taskmanagement.task
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -53,31 +54,22 @@ class AddTaskFragment : Fragment() {
             findNavController().popBackStack()
         }
 
-        checkUserRoleAndProceed(currentUser.uid)
+        checkRole()
     }
 
-    private fun checkUserRoleAndProceed(userId: String) {
-        val userRoleRef = db.collection("users").document(userId)
-        userRoleRef.get().addOnSuccessListener { document ->
-            val userRole = document.getString("role")
-
-            if (userRole == "Dev") {
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.not_authorized),
-                    Toast.LENGTH_LONG
-                ).show()
-                findNavController().navigate(R.id.profileFragment)
-            } else {
-                initializeViews()
-            }
-        }.addOnFailureListener { exception ->
+    private fun checkRole() {
+        val sharedPrefs =
+            requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+        val role = sharedPrefs.getString("role", "defaultRole")
+        if (role == "Dev") {
             Toast.makeText(
                 requireContext(),
-                getString(R.string.failed_to_retrieve_user_role, exception.message),
-                Toast.LENGTH_SHORT
+                getString(R.string.not_authorized),
+                Toast.LENGTH_LONG
             ).show()
-
+            findNavController().navigate(R.id.profileFragment)
+        } else {
+            initializeViews()
         }
     }
 
@@ -152,60 +144,48 @@ class AddTaskFragment : Fragment() {
     }
 
     private fun loadUsers(assignedToDropdown: AutoCompleteTextView) {
-        val currentUser = mAuth.currentUser ?: return
-        val userRoleRef = db.collection("users").document(currentUser.uid)
+        val sharedPrefs =
+            requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+        val role = sharedPrefs.getString("role", "defaultRole")
 
-        userRoleRef.get().addOnSuccessListener { document ->
-            val userRole = document.getString("role")
-
-            if (userRole != null) {
-                val query = when (userRole) {
-                    "PM" -> db.collection("users").whereEqualTo("role", "PL")
-                    "PL" -> db.collection("users").whereEqualTo("role", "Dev")
-                    else -> db.collection("users").whereEqualTo("role", "Dev")
-                }
-
-                query.get()
-                    .addOnSuccessListener { result ->
-                        val userList = mutableListOf<String>()
-
-                        for (doc in result) {
-                            val userEmail = doc.getString("email")
-                            userEmail?.let { userList.add(it) }
-                        }
-
-                        val adapter = ArrayAdapter(
-                            requireContext(),
-                            R.layout.dropdown_item,
-                            userList
-                        )
-                        assignedToDropdown.setAdapter(adapter)
-                    }
-                    .addOnFailureListener { exception ->
-                        Toast.makeText(
-                            requireContext(),
-                            getString(R.string.failed_to_load_users, exception.message),
-                            Toast.LENGTH_SHORT
-                        ).show()
-
-                    }
-            } else {
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.user_role_not_found),
-                    Toast.LENGTH_SHORT
-                ).show()
-
+        if (role != null) {
+            val query = when (role) {
+                "PM" -> db.collection("users").whereEqualTo("role", "PL")
+                "PL" -> db.collection("users").whereEqualTo("role", "Dev")
+                else -> db.collection("users").whereEqualTo("role", "Dev")
             }
-        }.addOnFailureListener { exception ->
+
+            query.get()
+                .addOnSuccessListener { result ->
+                    val userList = mutableListOf<String>()
+
+                    for (doc in result) {
+                        val userEmail = doc.getString("email")
+                        userEmail?.let { userList.add(it) }
+                    }
+
+                    val adapter = ArrayAdapter(
+                        requireContext(),
+                        R.layout.dropdown_item,
+                        userList
+                    )
+                    assignedToDropdown.setAdapter(adapter)
+                }
+                .addOnFailureListener { exception ->
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.failed_to_load_users, exception.message),
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                }
+        } else {
             Toast.makeText(
                 requireContext(),
-                getString(R.string.failed_to_retrieve_user_role, exception.message),
+                getString(R.string.user_role_not_found),
                 Toast.LENGTH_SHORT
             ).show()
 
         }
     }
-
-
 }

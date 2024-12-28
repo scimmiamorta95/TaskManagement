@@ -22,26 +22,14 @@ class MainActivity : AppCompatActivity() {
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                R.id.welcomeFragment, R.id.loginFragment, R.id.registerFragment, R.id.forgotPasswordFragment -> {
+                R.id.welcomeFragment, R.id.loginFragment, R.id.registerFragment, R.id.forgotPasswordFragment, R.id.chatFragment -> {
                     bottomNavMenu.visibility = android.view.View.GONE
                 }
-
                 else -> {
                     bottomNavMenu.visibility = android.view.View.VISIBLE
                 }
             }
         }
-    }
-
-    fun hideBottomNavigation() {
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavMenu)
-        bottomNavigationView.visibility = android.view.View.GONE
-    }
-
-
-    fun showBottomNavigation() {
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavMenu)
-        bottomNavigationView.visibility = android.view.View.VISIBLE
     }
 
 }

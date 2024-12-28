@@ -29,18 +29,15 @@ class ChatViewAdapter(
 
         val otherParticipant = chat.participants.firstOrNull { it != currentUserEmail }
 
-        holder.chatName.text = otherParticipant ?:
-                holder.itemView.context.getString(R.string.user_not_authenticated)
-        holder.lastMessage.text = chat.lastMessage?.text ?:
-                holder.itemView.context.getString(R.string.no_message)
+        holder.chatName.text =
+            otherParticipant ?: holder.itemView.context.getString(R.string.user_not_authenticated)
+        holder.lastMessage.text =
+            chat.lastMessage?.text ?: holder.itemView.context.getString(R.string.no_message)
 
         holder.itemView.setOnClickListener {
             onChatClicked(chat)
         }
     }
-
-
-
 
     override fun getItemCount() = chatList.size
 }

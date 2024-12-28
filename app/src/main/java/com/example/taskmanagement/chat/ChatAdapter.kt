@@ -6,7 +6,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.taskmanagement.R
-class ChatAdapter(private val currentUserId: String) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+class ChatAdapter(private val currentUserId: String) :
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val messages = mutableListOf<Message>()
 
@@ -82,6 +84,4 @@ class ChatAdapter(private val currentUserId: String) : RecyclerView.Adapter<Recy
 
         }
     }
-
-
 }

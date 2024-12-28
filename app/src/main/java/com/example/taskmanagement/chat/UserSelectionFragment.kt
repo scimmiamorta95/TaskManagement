@@ -33,7 +33,7 @@ class UserSelectionFragment : Fragment() {
 
         recyclerViewChats = view.findViewById(R.id.recyclerViewChats)
         btnNewChat = view.findViewById(R.id.newChatButton)
-        noChatsMessage= view.findViewById(R.id.noChatsMessage)
+        noChatsMessage = view.findViewById(R.id.noChatsMessage)
 
         setupRecyclerView()
         loadChats()
@@ -126,14 +126,15 @@ class UserSelectionFragment : Fragment() {
                 if (isAdded) {
                     Toast.makeText(
                         requireContext(),
-                        getString(R.string.error_loading_last_message, e.message ?: "Unknown error"),
+                        getString(
+                            R.string.error_loading_last_message,
+                            e.message ?: "Unknown error"
+                        ),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             }
     }
-
-
 
 
     private fun openChat(chat: Chat) {
@@ -189,7 +190,6 @@ class UserSelectionFragment : Fragment() {
                         R.id.action_userSelectionFragment_to_chatFragment,
                         bundle
                     )
-
                 }
             }
             .addOnFailureListener {
@@ -202,5 +202,4 @@ class UserSelectionFragment : Fragment() {
                 }
             }
     }
-
 }

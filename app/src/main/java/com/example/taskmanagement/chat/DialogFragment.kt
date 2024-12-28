@@ -45,7 +45,11 @@ class DialogFragment : DialogFragment() {
     private fun loadUsers() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser == null) {
-            Toast.makeText(requireContext(), getString(R.string.error_loading_users), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.error_loading_users),
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
 
@@ -53,8 +57,10 @@ class DialogFragment : DialogFragment() {
             .document(currentUser.uid)
             .get()
             .addOnSuccessListener {
-                val sharedPrefs = requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
-                val currentUserRole = sharedPrefs.getString("role", "defaultRole")?: return@addOnSuccessListener
+                val sharedPrefs =
+                    requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+                val currentUserRole =
+                    sharedPrefs.getString("role", "defaultRole") ?: return@addOnSuccessListener
 
                 val rolesToLoad = when (currentUserRole) {
                     "PM" -> listOf("PL")
@@ -92,7 +98,6 @@ class DialogFragment : DialogFragment() {
                 ).show()
             }
     }
-
 
     private fun openChat(selectedUser: String) {
         val bundle = Bundle()

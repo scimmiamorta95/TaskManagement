@@ -1,7 +1,7 @@
 package com.example.taskmanagement.task
 
+import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -57,9 +57,6 @@ class SubTaskFragment : Fragment() {
         backArrow.setOnClickListener {
             findNavController().popBackStack()
         }
-
-
-
         return view
     }
 
@@ -83,7 +80,11 @@ class SubTaskFragment : Fragment() {
                     bundle
                 )
             } else {
-                Toast.makeText(requireContext(), "Task ID not found", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.task_id_not_found),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -104,8 +105,6 @@ class SubTaskFragment : Fragment() {
                     .get()
                     .await()
 
-                Log.d("SubTaskFragment", "Firestore result size: ${result.size()}")
-
                 subtaskList.clear()
                 for (document in result) {
                     val subTask = document.toObject(SubTask::class.java)
@@ -125,7 +124,11 @@ class SubTaskFragment : Fragment() {
                 }
 
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Failed to load subtasks", Toast.LENGTH_SHORT)
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.failed_to_load_subtasks),
+                    Toast.LENGTH_SHORT
+                )
                     .show()
             }
         }
@@ -134,29 +137,27 @@ class SubTaskFragment : Fragment() {
     private fun toggleFabMenu(fabAddSubtask: View, fabBackHome: View) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
-            val userRef = FirebaseFirestore.getInstance().collection("users").document(currentUser.uid)
-            userRef.get().addOnSuccessListener { document ->
-                val userRole = document.getString("role")
-                if (userRole == "PM") {
-                    fabAddSubtask.visibility = View.GONE
-                    if (isFabMenuOpen) {
-                        fabBackHome.visibility = View.GONE
-                    } else {
-                        fabBackHome.visibility = View.VISIBLE
-                    }
+            val sharedPrefs =
+                requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+            val role = sharedPrefs.getString("role", "defaultRole")
+            if (role == "PM") {
+                fabAddSubtask.visibility = View.GONE
+                if (isFabMenuOpen) {
+                    fabBackHome.visibility = View.GONE
                 } else {
-                    if (isFabMenuOpen) {
-                        fabAddSubtask.visibility = View.GONE
-                        fabBackHome.visibility = View.GONE
-                    } else {
-                        fabAddSubtask.visibility = View.VISIBLE
-                        fabBackHome.visibility = View.VISIBLE
-                    }
+                    fabBackHome.visibility = View.VISIBLE
                 }
-                isFabMenuOpen = !isFabMenuOpen
-            }.addOnFailureListener {
-                Toast.makeText(context, "Error loading user role", Toast.LENGTH_SHORT).show()
+            } else {
+                if (isFabMenuOpen) {
+                    fabAddSubtask.visibility = View.GONE
+                    fabBackHome.visibility = View.GONE
+                } else {
+                    fabAddSubtask.visibility = View.VISIBLE
+                    fabBackHome.visibility = View.VISIBLE
+                }
             }
+            isFabMenuOpen = !isFabMenuOpen
+
         }
     }
 

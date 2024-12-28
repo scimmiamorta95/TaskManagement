@@ -142,10 +142,15 @@ class ProfileFragment : Fragment() {
             FileOutputStream(file).use { output ->
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, output)
             }
-            Toast.makeText(context, "Immagine salvata correttamente", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, getString(R.string.profile_image_saved), Toast.LENGTH_SHORT)
+                .show()
         } catch (e: IOException) {
             e.printStackTrace()
-            Toast.makeText(context, "Errore nel salvataggio dell'immagine", Toast.LENGTH_SHORT)
+            Toast.makeText(
+                context,
+                getString(R.string.error_saving_profile_image),
+                Toast.LENGTH_SHORT
+            )
                 .show()
         }
     }
@@ -203,7 +208,7 @@ class ProfileFragment : Fragment() {
                 .addOnFailureListener {
                     Toast.makeText(
                         context,
-                        "Errore nel caricamento del profilo",
+                        getString(R.string.error_loading_users),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -219,12 +224,12 @@ class ProfileFragment : Fragment() {
                         taskList.add(taskName)
                     }
                 }
-                Log.e("ProfileFragment", "Task List: $taskList")
                 taskAdapter!!.notifyDataSetChanged()
                 listViewHeight(binding.assignedTasksList)
             }
             .addOnFailureListener {
-                Toast.makeText(context, getString(R.string.error_loading_tasks), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, getString(R.string.error_loading_tasks), Toast.LENGTH_SHORT)
+                    .show()
 
             }
 
@@ -285,7 +290,8 @@ class ProfileFragment : Fragment() {
                 }
             }
             .addOnFailureListener {
-                Toast.makeText(context, getString(R.string.error_loading_tasks), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, getString(R.string.error_loading_tasks), Toast.LENGTH_SHORT)
+                    .show()
             }
 
 
@@ -296,11 +302,10 @@ class ProfileFragment : Fragment() {
         val assignedTextView = view?.findViewById<TextView>(R.id.assignedSubtask)
         val completedTextView = view?.findViewById<TextView>(R.id.completedSubtask)
 
-        completedTextView?.text = completed.toString()
-        assignedTextView?.text = assigned.toString()
-        toDoTextView?.text = toDo.toString()
+        completedTextView?.text = "$completed"
+        assignedTextView?.text = "$assigned"
+        toDoTextView?.text = "$toDo"
     }
-
 
     private fun listViewHeight(listView: ListView) {
         val adapter = listView.adapter ?: return

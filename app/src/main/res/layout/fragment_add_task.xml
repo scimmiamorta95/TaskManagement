@@ -61,7 +61,6 @@
             android:orientation="vertical"
             android:showDividers="middle">
 
-            <!-- Nome Subtask -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/subtaskNameText"
                 style="@style/Widget.Material3.TextInputLayout.FilledBox"

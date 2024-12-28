@@ -191,5 +191,8 @@
     <string name="fill_all_field">Fill in all fields</string>
     <string name="profile_updated">Profile updated successfully</string>
     <string name="error_updating_profile">Error updating profile</string>
-
+    <string name="profile_image_saved">Profile image saved successfully"</string>
+    <string name="error_saving_profile_image">Error saving profile image</string>
+    <string name="error_loading_profile_image">Error loading profile image</string>
+    <string name="task_id_not_found">Task ID not found</string>
 </resources>

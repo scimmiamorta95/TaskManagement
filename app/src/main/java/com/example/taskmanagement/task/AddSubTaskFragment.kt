@@ -1,5 +1,6 @@
 package com.example.taskmanagement.task
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -152,7 +153,6 @@ class AddSubTaskFragment : Fragment() {
                             getString(R.string.subtask_added_successfully),
                             Toast.LENGTH_SHORT
                         ).show()
-
                         findNavController().popBackStack()
                     }
                     .addOnFailureListener { e ->
@@ -173,77 +173,66 @@ class AddSubTaskFragment : Fragment() {
     }
 
     private fun loadUsers(assignedToDropdown: AutoCompleteTextView) {
-        val currentUser = mAuth.currentUser ?: return
-        val userRoleRef = db.collection("users").document(currentUser.uid)
+        val sharedPrefs =
+            requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+        val role = sharedPrefs.getString("role", "defaultRole")
 
-        userRoleRef.get().addOnSuccessListener { document ->
-            val userRole = document.getString("role")
-
-            if (userRole != null) {
-                val query = when (userRole) {
-                    "PM" -> db.collection("users").whereEqualTo("role", "PL")
-                    "PL" -> db.collection("users").whereEqualTo("role", "Dev")
-                    else -> db.collection("users").whereEqualTo("role", "Dev")
-                }
-
-                query.get()
-                    .addOnSuccessListener { result ->
-                        val userList = mutableListOf<String>()
-
-                        for (doc in result) {
-                            val userEmail = doc.getString("email")
-                            userEmail?.let { userList.add(it) }
-                        }
-
-                        val adapter = ArrayAdapter(
-                            requireContext(),
-                            R.layout.dropdown_item,
-                            userList
-                        )
-                        assignedToDropdown.setAdapter(adapter)
-                    }
-                    .addOnFailureListener {
-                        Toast.makeText(
-                            requireContext(),
-                            getString(R.string.role_not_found),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-            } else {
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.user_role_not_found),
-                    Toast.LENGTH_SHORT
-                ).show()
-
+        if (role != null) {
+            val query = when (role) {
+                "PM" -> db.collection("users").whereEqualTo("role", "PL")
+                "PL" -> db.collection("users").whereEqualTo("role", "Dev")
+                else -> db.collection("users").whereEqualTo("role", "Dev")
             }
-        }.addOnFailureListener {
+
+            query.get()
+                .addOnSuccessListener { result ->
+                    val userList = mutableListOf<String>()
+
+                    for (doc in result) {
+                        val userEmail = doc.getString("email")
+                        userEmail?.let { userList.add(it) }
+                    }
+
+                    val adapter = ArrayAdapter(
+                        requireContext(),
+                        R.layout.dropdown_item,
+                        userList
+                    )
+                    assignedToDropdown.setAdapter(adapter)
+                }
+                .addOnFailureListener {
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.role_not_found),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+        } else {
             Toast.makeText(
                 requireContext(),
-                getString(R.string.error_retrieving_role),
+                getString(R.string.user_role_not_found),
                 Toast.LENGTH_SHORT
             ).show()
-        }
-    }
-
-    private fun mapPriorityToNumber(priorityText: String): Int {
-        return when (priorityText.lowercase()) {
-            "high" -> 2
-            "medium" -> 1
-            "low" -> 0
-            else -> 0
 
         }
     }
+}
 
-    private fun mapStatusToNumber(statusText: String): Int {
-        return when (statusText.lowercase()) {
-            "Todo" -> 0
-            "Assigned" -> 1
-            "Completed" -> 2
-            else -> 0
-        }
+private fun mapPriorityToNumber(priorityText: String): Int {
+    return when (priorityText.lowercase()) {
+        "high" -> 2
+        "medium" -> 1
+        "low" -> 0
+        else -> 0
+
     }
+}
 
-
+private fun mapStatusToNumber(statusText: String): Int {
+    return when (statusText.lowercase()) {
+        "Todo" -> 0
+        "Assigned" -> 1
+        "Completed" -> 2
+        else -> 0
+    }
 }

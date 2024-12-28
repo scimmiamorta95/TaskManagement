@@ -95,12 +95,13 @@ class EditProfileFragment : Fragment() {
                 ?.document(it)
                 ?.set(userData)
                 ?.addOnSuccessListener {
-                    Toast.makeText(context, getString(R.string.profile_updated), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(R.string.profile_updated), Toast.LENGTH_SHORT)
+                        .show()
                 }
                 ?.addOnFailureListener {
                     Toast.makeText(
                         context,
-                        getString((R.string.error_updating_profile)),
+                        getString(R.string.error_saving_profile_image),
                         Toast.LENGTH_SHORT
                     ).show()
                 }

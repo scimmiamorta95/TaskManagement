@@ -61,7 +61,6 @@
             android:orientation="vertical"
             android:showDividers="middle">
 
-            <!-- Nome Task -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/taskNameText"
                 style="@style/Widget.Material3.TextInputLayout.FilledBox"

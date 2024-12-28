@@ -15,9 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.taskmanagement.MainActivity
 import com.example.taskmanagement.R
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
@@ -60,7 +58,6 @@ class ChatFragment : Fragment() {
                 requireActivity().onBackPressedDispatcher.onBackPressed()
                 return null
             }
-
             return null
         }
 
@@ -75,11 +72,9 @@ class ChatFragment : Fragment() {
         createChat()
 
         nameChatTextView.text = receiverId
-        (activity as? MainActivity)?.hideBottomNavigation()
-
 
         buttonBack.setOnClickListener {
-            findNavController().navigateUp()
+            findNavController().popBackStack()
         }
 
         return view
@@ -119,7 +114,6 @@ class ChatFragment : Fragment() {
             adapter.submitList(ArrayList(messageList))
             recyclerView.scrollToPosition(messageList.size - 1)
         } catch (e: Exception) {
-            Log.e("ChatFragment", "Error loading messages: ", e)
             Toast.makeText(
                 requireContext(),
                 getString(R.string.failed_to_load_messages),
@@ -131,7 +125,6 @@ class ChatFragment : Fragment() {
 
     private fun sendMessage(text: String) {
         val chatId = getChatId()
-
         val message = Message(
             senderId = currentUserId,
             text = text,
@@ -194,10 +187,6 @@ class ChatFragment : Fragment() {
                         listOf(currentUserId, receiverId).sorted()
                     val chatData = hashMapOf(
                         "participants" to participants
-                    )
-                    Log.d(
-                        "ChatFragment",
-                        "No existing chat found. Creating new chat with participants: $participants"
                     )
                     chatRef.set(chatData)
                         .addOnSuccessListener {

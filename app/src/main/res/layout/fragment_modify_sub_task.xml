@@ -45,7 +45,6 @@
         </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- NestedScrollView -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -62,7 +61,6 @@
             android:orientation="vertical"
             android:showDividers="middle">
 
-            <!-- Nome Subtask -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/subtaskNameText"
                 style="@style/Widget.Material3.TextInputLayout.FilledBox"
@@ -76,7 +74,6 @@
                     android:layout_height="wrap_content" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Descrizione Subtask -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/subtaskDescriptionText"
                 style="@style/Widget.Material3.TextInputLayout.FilledBox"
@@ -90,7 +87,6 @@
                     android:layout_height="wrap_content" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Priorità -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/priorityMenu"
                 style="@style/Widget.Material3.TextInputLayout.FilledBox.ExposedDropdownMenu"
@@ -105,7 +101,6 @@
                     android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Stato -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/statusMenu"
                 style="@style/Widget.Material3.TextInputLayout.FilledBox.ExposedDropdownMenu"
@@ -120,7 +115,6 @@
                     android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Scadenza -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/deadlineMenu"
                 style="@style/Widget.Material3.TextInputLayout.FilledBox"
@@ -132,11 +126,10 @@
                     android:id="@+id/subtask_deadline"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:focusable="false" />
+                    android:focusable="false"
+                    android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Progresso -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -153,7 +146,6 @@
                 android:valueFrom="0"
                 android:valueTo="100" />
 
-            <!-- Assegnato a -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/assignedMenu"
                 style="@style/Widget.Material3.TextInputLayout.FilledBox.ExposedDropdownMenu"
@@ -168,7 +160,6 @@
                     android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Pulsante Salva -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/save_subtask_button"
                 style="@style/Widget.Material3.Button"

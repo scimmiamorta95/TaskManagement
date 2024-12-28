@@ -170,4 +170,8 @@
     <string name="fill_all_field">Completa tutti i campi</string>
     <string name="profile_updated">Profilo aggiornato con successo</string>
     <string name="error_updating_profile">Errore aggiornamento profilo</string>
+    <string name="profile_image_saved">Immagine del profilo salvata correttamente"</string>
+    <string name="error_saving_profile_image">Errore salvataggio immagine profilo</string>
+    <string name="error_loading_profile_image">Errore caricamento immagine profilo</string>
+    <string name="task_id_not_found">Task ID non trovato</string>
 </resources>

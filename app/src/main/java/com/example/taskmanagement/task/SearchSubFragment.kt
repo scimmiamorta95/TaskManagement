@@ -1,7 +1,6 @@
 package com.example.taskmanagement.task
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,8 +29,7 @@ class SearchSubFragment : Fragment() {
     private var taskID: String? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_search_sub, container, false)
 
@@ -72,13 +70,9 @@ class SearchSubFragment : Fragment() {
         subtaskRecyclerView.visibility = View.VISIBLE
         lifecycleScope.launch {
             try {
-                val result = firestore.collection("tasks")
-                    .document(taskId)
-                    .collection("subTasks")
-                    .get()
-                    .await()
-
-                Log.d("SubTaskFragment", "Firestore result size: ${result.size()}")
+                val result =
+                    firestore.collection("tasks").document(taskId).collection("subTasks").get()
+                        .await()
 
                 subtaskList.clear()
                 for (document in result) {
@@ -99,7 +93,11 @@ class SearchSubFragment : Fragment() {
                 }
 
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Failed to load subtasks", Toast.LENGTH_SHORT)
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.failed_to_load_subtasks),
+                    Toast.LENGTH_SHORT
+                )
                     .show()
             }
         }

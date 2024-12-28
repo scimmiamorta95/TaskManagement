@@ -100,7 +100,8 @@ class SearchFragment : Fragment() {
         }
         lifecycleScope.launch {
             try {
-                val sharedPrefs = requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+                val sharedPrefs =
+                    requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
                 val role = sharedPrefs.getString("role", "defaultRole")
 
                 taskList.clear()
@@ -321,6 +322,17 @@ class SearchFragment : Fragment() {
     }
 
     private fun onEditTask(task: Task) {
+        val sharedPrefs =
+            requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+        val role = sharedPrefs.getString("role", "defaultRole")
+        if (role == "PL" || role == "Dev") {
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.only_pm_can_edit_tasks),
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
         val taskId = taskIdMap[task.name]
         val bundle = Bundle().apply {
             putString("taskId", taskId)

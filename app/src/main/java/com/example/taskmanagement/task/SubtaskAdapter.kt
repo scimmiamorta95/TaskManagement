@@ -57,11 +57,10 @@ class SubtaskAdapter(
             originalTaskList
         } else {
             originalTaskList.filter {
-                it.name.contains(query, ignoreCase = true) || it.description.contains(
-                    query,
-                    ignoreCase = true
-                ) || it.deadline.contains(query, ignoreCase = true)
-                        ||  statusMap[query] == it.status
+                it.name.contains(query, ignoreCase = true)
+                        || it.description.contains(query, ignoreCase = true)
+                        || it.deadline.contains(query, ignoreCase = true)
+                        || statusMap[query] == it.status
                         || priorityMap[query] == it.priority
 
             }
@@ -115,7 +114,6 @@ class SubtaskAdapter(
                     val subtasksRef = db.collection("tasks")
                         .document(taskId)
                         .collection("subTasks")
-
                     subtasksRef.get()
                         .addOnSuccessListener { documents ->
                             for (document in documents) {
@@ -167,7 +165,6 @@ class SubtaskAdapter(
                 }
             }
 
-
             deleteButton.setOnClickListener {
                 db.collection("tasks")
                     .document(taskId).collection("subTasks")
@@ -216,7 +213,6 @@ class SubtaskAdapter(
                             .show()
                     }
             }
-
         }
 
         private fun calculateDaysRemaining(deadline: String?): Int {
@@ -233,9 +229,7 @@ class SubtaskAdapter(
                 0
             }
         }
-
     }
-
 }
 
 
