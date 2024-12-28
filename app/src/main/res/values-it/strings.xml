@@ -167,4 +167,7 @@
     <string name="only_pm_can_edit_tasks">Solo i PM possono modificare i task!</string>
     <string name="assigned_tasks">Tasks assegnati</string>
     <string name="statistics">Statistiche</string>
+    <string name="fill_all_field">Completa tutti i campi</string>
+    <string name="profile_updated">Profilo aggiornato con successo</string>
+    <string name="error_updating_profile">Errore aggiornamento profilo</string>
 </resources>

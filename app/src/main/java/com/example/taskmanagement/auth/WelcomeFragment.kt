@@ -1,6 +1,7 @@
 package com.example.taskmanagement.auth
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -40,7 +41,7 @@ class WelcomeFragment : Fragment() {
             try {
                 findNavController().navigate(R.id.action_welcomeFragment_to_loginFragment)
             } catch (e: Exception) {
-                android.util.Log.e("WelcomeFragment", "Errore durante la navigazione", e)
+                Log.e("WelcomeFragment", "Errore durante la navigazione", e)
             }
         }
 
@@ -48,7 +49,7 @@ class WelcomeFragment : Fragment() {
             try {
                 findNavController().navigate(R.id.action_welcomeFragment_to_registerFragment)
             } catch (e: Exception) {
-                android.util.Log.e("WelcomeFragment", "Errore durante la navigazione", e)
+                Log.e("WelcomeFragment", "Errore durante la navigazione", e)
             }
         }
     }

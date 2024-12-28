@@ -62,10 +62,8 @@ class LoginFragment : Fragment() {
 
         binding.username.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-
                 val email = binding.username.text.toString()
                 val pass = binding.password.text.toString()
-
                 when {
                     email.isEmpty() || pass.isEmpty() -> {
                         Toast.makeText(
@@ -73,7 +71,6 @@ class LoginFragment : Fragment() {
                             Toast.LENGTH_SHORT
                         ).show()
                     }
-
                     else -> {
                         loginUser(email, pass)
                     }
@@ -95,7 +92,6 @@ class LoginFragment : Fragment() {
                             Toast.LENGTH_SHORT
                         ).show()
                     }
-
                     else -> {
                         loginUser(email, pass)
                     }
@@ -161,6 +157,7 @@ class LoginFragment : Fragment() {
         editor.putString("user", userJson)
         editor.apply()
     }
+
     private fun saveUserRoleLocally(role: String?) {
         val sharedPreferences =
             requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)

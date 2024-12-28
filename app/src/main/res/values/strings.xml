@@ -188,6 +188,8 @@
     <string name="number" translatable="false">0</string>
     <string name="assigned_tasks">Assigned Tasks</string>
     <string name="statistics">Statics</string>
-
+    <string name="fill_all_field">Fill in all fields</string>
+    <string name="profile_updated">Profile updated successfully</string>
+    <string name="error_updating_profile">Error updating profile</string>
 
 </resources>

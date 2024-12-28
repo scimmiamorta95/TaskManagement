@@ -21,12 +21,11 @@ class EditProfileFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentEditProfileBinding.inflate(inflater, container, false)
 
         firebaseAuth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
-
 
         loadUserProfile()
 
@@ -60,7 +59,12 @@ class EditProfileFragment : Fragment() {
                     }
                 }
                 ?.addOnFailureListener {
-                    Toast.makeText(context, "Errore nel caricamento dei dati", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        getString(R.string.error_fetching_data),
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
                 }
         }
     }
@@ -74,7 +78,7 @@ class EditProfileFragment : Fragment() {
         val skills = binding.editTextSkills.text.toString().trim()
 
         if (firstName.isEmpty() || lastName.isEmpty() || street.isEmpty() || skills.isEmpty()) {
-            Toast.makeText(context, "Compila tutti i campi", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, getString(R.string.fill_all_field), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -91,10 +95,14 @@ class EditProfileFragment : Fragment() {
                 ?.document(it)
                 ?.set(userData)
                 ?.addOnSuccessListener {
-                    Toast.makeText(context, "Profilo aggiornato", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(R.string.profile_updated), Toast.LENGTH_SHORT).show()
                 }
                 ?.addOnFailureListener {
-                    Toast.makeText(context, "Errore nell'aggiornamento del profilo", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        getString((R.string.error_updating_profile)),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
         }
     }

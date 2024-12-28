@@ -2,7 +2,6 @@ package com.example.taskmanagement.auth
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -55,19 +54,31 @@ class RegisterFragment : Fragment() {
     private fun validateInputs(email: String, pass: String, verifyPass: String): Boolean {
         return when {
             email.isEmpty() || pass.isEmpty() || verifyPass.isEmpty() -> {
-                showToast("Per favore, completa tutti i campi.")
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.fill_all_field),
+                    Toast.LENGTH_SHORT
+                ).show()
                 false
             }
+
             !isPasswordStrong(pass) -> {
-                showToast(getString(R.string.password_not_strong_enough))
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.password_not_strong_enough),
+                    Toast.LENGTH_SHORT
+                ).show()
                 false
             }
 
             pass != verifyPass -> {
-                showToast(getString(R.string.passwords_do_not_match))
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.passwords_do_not_match),
+                    Toast.LENGTH_SHORT
+                ).show()
                 false
             }
-
 
             else -> true
         }
@@ -82,25 +93,23 @@ class RegisterFragment : Fragment() {
     private fun registerUser(email: String, pass: String) {
         mAuth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                Log.d("RegisterFragment", "SONO in registerUser")
                 val userId = mAuth.currentUser?.uid
                 val user = User(email = email, password = pass)
-
                 userId?.let {
                     FirebaseFirestore.getInstance().collection("users")
                         .document(it)
                         .set(user)
                         .addOnSuccessListener {
                             saveUserLocally(user)
-                            showToast(getString(R.string.registration_success))
+                            Toast.makeText(requireContext(), getString(R.string.registration_success), Toast.LENGTH_SHORT).show()
                             findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
                         }
-                        .addOnFailureListener { e ->
-                            showToast("Errore nel salvataggio dei dati: ${e.message}")
+                        .addOnFailureListener {
+                            Toast.makeText(requireContext(), getString(R.string.error_fetching_data), Toast.LENGTH_SHORT).show()
                         }
                 }
             } else {
-                showToast(task.exception?.message ?: "Errore sconosciuto.")
+                Toast.makeText(requireContext(), getString(R.string.error_fetching_data), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -115,7 +124,4 @@ class RegisterFragment : Fragment() {
         editor.apply()
     }
 
-    private fun showToast(message: String) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
-    }
 }
