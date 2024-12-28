@@ -56,9 +56,9 @@ class TaskAdapter(
                     query,
                     ignoreCase = true
                 ) == true || it.deadline.contains(query, ignoreCase = true)
+
             }
         }
-
         updateTasks(filteredList)
     }
 
@@ -81,7 +81,7 @@ class TaskAdapter(
 
             binding.subtaskCount.text = "Sottotask: ${task.nSubTask}"
 
-            binding.btnEditTask.setOnClickListener{
+            binding.btnEditTask.setOnClickListener {
                 onEditTask(task)
             }
 
@@ -114,7 +114,10 @@ class TaskAdapter(
                                     .addOnFailureListener { e ->
                                         Toast.makeText(
                                             itemView.context,
-                                            itemView.context.getString(R.string.error_deleting_task, e.message),
+                                            itemView.context.getString(
+                                                R.string.error_deleting_task,
+                                                e.message
+                                            ),
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }
@@ -153,7 +156,6 @@ class TaskAdapter(
             }
         }
     }
-
 
 
     class TaskDiffCallback(

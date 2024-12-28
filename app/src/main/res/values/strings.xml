@@ -184,6 +184,10 @@
     <string name="permission_denied">Permission denied</string>
     <string name="image_loading_error">Image error loading</string>
     <string name="logout_success">Logout success!</string>
+    <string name="only_pm_can_edit_tasks">Only PM can edit task!</string>
+    <string name="number" translatable="false">0</string>
+    <string name="assigned_tasks">Assigned Tasks</string>
+    <string name="statistics">Statics</string>
 
 
 </resources>

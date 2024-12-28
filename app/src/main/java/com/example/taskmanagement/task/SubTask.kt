@@ -6,7 +6,7 @@ data class SubTask(
     val createdBy: String?= "",
     val assignedTo: String? = null,
     val deadline: String = "",
-    val priority: Int = 0, // 1: alta, 2: media, 3: bassa
-    var status: String = "todo",
+    val priority: Int = 0,
+    var status: Int = 0,
     var progress: Int = 0,
 )

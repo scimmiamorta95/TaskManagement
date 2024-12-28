@@ -160,8 +160,6 @@ class SubTaskFragment : Fragment() {
         }
     }
 
-
-
     private fun onEditSubTask(subtask: SubTask) {
         val subtaskId = subtaskIdMap[subtask]
         val bundle = Bundle().apply {

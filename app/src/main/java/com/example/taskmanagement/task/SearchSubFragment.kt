@@ -54,7 +54,7 @@ class SearchSubFragment : Fragment() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                subtaskAdapter.filter(newText)
+                subtaskAdapter.filter(newText, requireContext())
                 return true
             }
         })

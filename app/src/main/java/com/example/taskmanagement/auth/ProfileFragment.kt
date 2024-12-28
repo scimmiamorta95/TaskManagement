@@ -1,6 +1,7 @@
 package com.example.taskmanagement.auth
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -13,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ListView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -43,7 +45,8 @@ class ProfileFragment : Fragment() {
             if (isGranted) {
                 openGallery()
             } else {
-                Toast.makeText(context, getString(R.string.permission_denied), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, getString(R.string.permission_denied), Toast.LENGTH_SHORT)
+                    .show()
             }
         }
 
@@ -56,7 +59,8 @@ class ProfileFragment : Fragment() {
                 saveProfileImage(bitmap)
                 setProfileImage(bitmap)
             } else {
-                Toast.makeText(context, getString(R.string.image_loading_error), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, getString(R.string.image_loading_error), Toast.LENGTH_SHORT)
+                    .show()
             }
         }
 
@@ -159,27 +163,21 @@ class ProfileFragment : Fragment() {
     }
 
     private fun setProfileImage(bitmap: Bitmap) {
-        val circularBitmap = Bitmap.createScaledBitmap(bitmap, 80, 80, true)
+        val circularBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, true)
 
-        val matrix = android.graphics.Matrix()
-        matrix.postRotate(270f)
-        val rotatedBitmap = Bitmap.createBitmap(
-            circularBitmap,
-            0,
-            0,
-            circularBitmap.width,
-            circularBitmap.height,
-            matrix,
-            true
-        )
-
-        // Imposta l'immagine ruotata e rimpicciolita
-        binding.profileImage.setImageBitmap(rotatedBitmap)
+        binding.profileImage.setImageBitmap(circularBitmap)
     }
 
 
     private fun loadUserData() {
         val userId = firebaseAuth!!.currentUser!!.email
+
+        val sharedPrefs =
+            requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+        val role = sharedPrefs.getString("role", "defaultRole")
+        if (role == "PM") {
+            binding.taskListAssigned.visibility = View.GONE
+        }
 
         if (userId != null) {
             firestore!!.collection("usersData")
@@ -191,7 +189,7 @@ class ProfileFragment : Fragment() {
                     val skills = document.getString("skills")
 
                     if (!firstName.isNullOrEmpty() && !lastName.isNullOrEmpty()) {
-                        binding.userName.text = getString(R.string.user_name, firstName, lastName)
+                        binding.userName.text = getString(R.string.user_name, firstName, userId)
                         binding.welcomeMessage.text = getString(R.string.welcome_message, firstName)
 
                     } else {
@@ -210,7 +208,6 @@ class ProfileFragment : Fragment() {
                     ).show()
                 }
         }
-
         firestore!!.collection("tasks")
             .whereEqualTo("assignedTo", userId)
             .get()
@@ -232,31 +229,78 @@ class ProfileFragment : Fragment() {
             }
 
         firestore!!.collection("tasks")
-            .whereEqualTo("assignedTo", userId)
             .get()
-            .addOnSuccessListener { queryDocumentSnapshots: QuerySnapshot ->
-                var completed = 0
-                var todo = 0
-                var assigned = 0
+            .addOnSuccessListener { tasksSnapshot ->
+                var completedCount = 0
+                var assignedCount = 0
+                var toDoCount = 0
 
-                for (snapshot in queryDocumentSnapshots) {
-                    val status = snapshot.getString("status")
-                    when (status) {
-                        "Completed" -> completed++
-                        "Assigned" -> assigned++
-                        "Todo" -> todo++
-                    }
+                val taskCount = tasksSnapshot.size()
+                var tasksProcessed = 0
+
+                if (taskCount == 0) {
+                    updateStatistics(completedCount, assignedCount, toDoCount)
+                    return@addOnSuccessListener
                 }
 
-                binding.completedProjects.text = completed.toString()
-                binding.projectsToStart.text = todo.toString()
-                binding.averageCompletionTime.text = assigned.toString()
+                for (task in tasksSnapshot) {
+                    val taskId = task.id
+
+                    val subTaskQuery = if (role == "PL") {
+                        firestore!!.collection("tasks").document(taskId).collection("subTasks")
+                    } else {
+                        firestore!!.collection("tasks")
+                            .document(taskId)
+                            .collection("subTasks")
+                            .whereEqualTo("assignedTo", userId)
+                    }
+
+                    subTaskQuery.get()
+                        .addOnSuccessListener { subTasksSnapshot ->
+                            for (subTask in subTasksSnapshot) {
+                                val subTaskStatus = subTask.getLong("status")?.toInt()
+                                when (subTaskStatus) {
+                                    2 -> completedCount++
+                                    1 -> assignedCount++
+                                    0 -> toDoCount++
+                                }
+                            }
+
+                            tasksProcessed++
+
+                            if (tasksProcessed == taskCount) {
+                                updateStatistics(completedCount, assignedCount, toDoCount)
+                            }
+                        }
+                        .addOnFailureListener {
+                            Log.e(
+                                "ProfileFragment",
+                                "Errore nel recupero dei sottotask per il task $taskId"
+                            )
+                            tasksProcessed++
+                            if (tasksProcessed == taskCount) {
+                                updateStatistics(completedCount, assignedCount, toDoCount)
+                            }
+                        }
+                }
             }
             .addOnFailureListener {
                 Toast.makeText(context, getString(R.string.error_loading_tasks), Toast.LENGTH_SHORT).show()
-
             }
+
+
     }
+
+    private fun updateStatistics(completed: Int, assigned: Int, toDo: Int) {
+        val toDoTextView = view?.findViewById<TextView>(R.id.todoSubTask)
+        val assignedTextView = view?.findViewById<TextView>(R.id.assignedSubtask)
+        val completedTextView = view?.findViewById<TextView>(R.id.completedSubtask)
+
+        completedTextView?.text = completed.toString()
+        assignedTextView?.text = assigned.toString()
+        toDoTextView?.text = toDo.toString()
+    }
+
 
     private fun listViewHeight(listView: ListView) {
         val adapter = listView.adapter ?: return

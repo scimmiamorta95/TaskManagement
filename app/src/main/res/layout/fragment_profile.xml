@@ -23,6 +23,7 @@
                 android:layout_height="120dp"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="30dp"
+                android:contentDescription="@string/user_image"
                 android:src="@drawable/ic_baseline_account_circle_24"
                 android:scaleType="centerCrop"
                 android:background="@drawable/ic_baseline_account_circle_24" />
@@ -34,7 +35,7 @@
                 android:layout_below="@id/profileImage"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="15dp"
-                android:text="Nome Utente"
+                android:text="@string/username"
                 android:textColor="@android:color/black"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -67,6 +68,7 @@
 
         <!-- Task List -->
         <LinearLayout
+            android:id="@+id/taskListAssigned"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -75,7 +77,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Task Assegnati"
+                android:text="@string/assigned_tasks"
                 android:textColor="@color/black"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -99,7 +101,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Skills"
+                android:text="@string/skills"
                 android:textColor="@color/black"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -108,7 +110,7 @@
                 android:id="@+id/skillsList"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Skill 1, Skill 2, Skill 3"
+                android:text="@string/skills"
                 android:textColor="@color/black"
                 android:layout_marginTop="8dp" />
         </LinearLayout>
@@ -122,7 +124,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Statistiche"
+                android:text="@string/statistics"
                 android:textColor="@color/black"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -130,6 +132,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:baselineAligned="false"
                 android:orientation="horizontal"
                 android:layout_marginTop="16dp">
 
@@ -143,14 +146,14 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Progetti Conclusi"
+                        android:text="@string/todo"
                         android:textColor="@color/black" />
 
                     <TextView
-                        android:id="@+id/completedProjects"
+                        android:id="@+id/todoSubTask"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="5"
+                        android:text="@string/number"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -166,14 +169,14 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Progetti da Iniziare"
+                        android:text="@string/assigned"
                         android:textColor="@color/black" />
 
                     <TextView
-                        android:id="@+id/projectsToStart"
+                        android:id="@+id/assignedSubtask"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="3"
+                        android:text="@string/number"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -189,20 +192,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Tempo Medio"
+                        android:text="@string/complete"
                         android:textColor="@color/black" />
 
                     <TextView
-                        android:id="@+id/averageCompletionTime"
+                        android:id="@+id/completedSubtask"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="10 giorni"
+                        android:text="@string/number"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
+
 
         <Button
             android:id="@+id/buttonLogout"

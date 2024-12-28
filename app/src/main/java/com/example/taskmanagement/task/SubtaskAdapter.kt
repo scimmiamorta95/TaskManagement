@@ -1,5 +1,6 @@
 package com.example.taskmanagement.task
 
+import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -7,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.content.ContextCompat.getString
 import androidx.recyclerview.widget.RecyclerView
 import com.example.taskmanagement.R
 import com.google.firebase.firestore.FirebaseFirestore
@@ -41,7 +41,18 @@ class SubtaskAdapter(
         notifyDataSetChanged()
     }
 
-    fun filter(query: String?) {
+    fun filter(query: String?, context: Context) {
+        val statusMap = mapOf(
+            context.getString(R.string.completed) to 2,
+            context.getString(R.string.assigned) to 1,
+            context.getString(R.string.todo) to 0
+        )
+        val priorityMap = mapOf(
+            context.getString(R.string.high) to 2,
+            context.getString(R.string.medium) to 1,
+            context.getString(R.string.low) to 0
+        )
+
         val filteredList = if (query.isNullOrEmpty()) {
             originalTaskList
         } else {
@@ -50,11 +61,11 @@ class SubtaskAdapter(
                     query,
                     ignoreCase = true
                 ) || it.deadline.contains(query, ignoreCase = true)
-                        || it.status.contains(query, ignoreCase = true)
+                        ||  statusMap[query] == it.status
+                        || priorityMap[query] == it.priority
+
             }
         }
-
-
         updateSubTasks(filteredList)
     }
 
@@ -85,7 +96,12 @@ class SubtaskAdapter(
             }
             subtaskDeadline.text = subtask.deadline
             subtaskDaysRemaining.text = subtask.deadline
-            subtaskState.text = subtask.status
+            subtaskState.text = when (subtask.status) {
+                0 -> itemView.context.getString(R.string.todo)
+                1 -> itemView.context.getString(R.string.assigned)
+                2 -> itemView.context.getString(R.string.completed)
+                else -> itemView.context.getString(R.string.unknown)
+            }
             val daysRemaining = calculateDaysRemaining(subtask.deadline)
             val formattedText = itemView.context.getString(R.string.days_remaining, daysRemaining)
             subtaskDaysRemaining.text = formattedText
@@ -95,7 +111,7 @@ class SubtaskAdapter(
             }
 
             doneButton.setOnClickListener {
-                if (subtask.status != "completed") {
+                if (subtask.status != 2) {
                     val subtasksRef = db.collection("tasks")
                         .document(taskId)
                         .collection("subTasks")
@@ -106,25 +122,23 @@ class SubtaskAdapter(
                                 val subtaskName = document.getString("name")
                                 if (subtaskName == subtask.name) {
                                     document.reference.update(
-                                        "status",
-                                        "Completed",
-                                        "progress",
-                                        100
+                                        "status", 2,
+                                        "progress", 100
                                     )
                                         .addOnSuccessListener {
-                                            subtask.status = "Completed"
+                                            subtask.status = 2
                                             subtask.progress = 100
                                             notifyItemChanged(adapterPosition)
                                             Toast.makeText(
                                                 itemView.context,
-                                                "Completed",
+                                                "Subtask completato",
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }
                                         .addOnFailureListener { e ->
                                             Toast.makeText(
                                                 itemView.context,
-                                                "Failed to mark as completed: ${e.message}",
+                                                "Errore nel completare il subtask: ${e.message}",
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }
@@ -133,25 +147,26 @@ class SubtaskAdapter(
                             }
                             Toast.makeText(
                                 itemView.context,
-                                "Subtask not found for the task",
+                                "Subtask non trovato per questa task",
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
                         .addOnFailureListener { e ->
                             Toast.makeText(
                                 itemView.context,
-                                "Error fetching subtasks: ${e.message}",
+                                "Errore nel recupero dei subtasks: ${e.message}",
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
                 } else {
                     Toast.makeText(
                         itemView.context,
-                        "${subtask.name} is already completed",
+                        "Il subtask è già stato completato",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             }
+
 
             deleteButton.setOnClickListener {
                 db.collection("tasks")

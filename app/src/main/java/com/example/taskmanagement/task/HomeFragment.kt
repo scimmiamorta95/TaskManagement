@@ -149,7 +149,7 @@ class HomeFragment : Fragment() {
     }
 
     private suspend fun loadTasksForPL() {
-        fabMain.visibility = View.VISIBLE
+        fabMain.visibility = View.GONE
         try {
             val currentUserEmail = auth.currentUser?.email ?: return
 
@@ -308,6 +308,17 @@ class HomeFragment : Fragment() {
 
 
     private fun onEditTask(task: Task) {
+        val sharedPrefs =
+            requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+        val role = sharedPrefs.getString("role", "defaultRole")
+        if (role == "PL" || role == "Dev") {
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.only_pm_can_edit_tasks),
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
         val taskId = taskIdMap[task.name]
         val bundle = Bundle().apply {
             putString("taskId", taskId)
@@ -321,24 +332,12 @@ class HomeFragment : Fragment() {
                 val tasksFile = File(context.filesDir, "taskList.json")
                 val taskIdMapFile = File(context.filesDir, "taskIdMap.json")
 
-                var deletedFilesCount = 0
                 if (tasksFile.exists()) {
                     tasksFile.delete()
-                    deletedFilesCount++
                 }
                 if (taskIdMapFile.exists()) {
                     taskIdMapFile.delete()
-                    deletedFilesCount++
                 }
-
-                val message = if (deletedFilesCount > 0) {
-                    context.getString(R.string.files_deleted_successfully)
-                } else {
-                    context.getString(R.string.no_files_to_delete)
-                }
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-
-                Log.d("HomeFragment", "Saved files deleted successfully")
             } catch (e: Exception) {
                 Toast.makeText(
                     context,

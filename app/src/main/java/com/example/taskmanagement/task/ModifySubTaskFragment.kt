@@ -106,6 +106,7 @@ class ModifySubTaskFragment : Fragment() {
 
         setPriorityDropdown(subtask.priority)
         setStatusDropdown(subtask.status)
+
         loadUsers(binding.assignedDropdown)
 
         val datePicker = MaterialDatePicker.Builder.datePicker()
@@ -127,8 +128,7 @@ class ModifySubTaskFragment : Fragment() {
             val progress = binding.progressSlider.value.toInt()
             val assignedTo = binding.assignedDropdown.text.toString()
             val priority = getSelectedPriority()
-            val status = binding.statusDropdown.text.toString()
-
+            val status = getSelectedStatus()
 
             if (subtaskName.isNotEmpty() && subtaskDescription.isNotEmpty() && deadline.isNotEmpty() && assignedTo.isNotEmpty()) {
                 val updatedSubtask = SubTask(
@@ -193,7 +193,7 @@ class ModifySubTaskFragment : Fragment() {
         return priorities.indexOf(binding.priorityDropdown.text.toString()).takeIf { it >= 0 } ?: 0
     }
 
-    private fun setStatusDropdown(status: String) {
+    private fun setStatusDropdown(status: Int) {
         val statusOptions = resources.getStringArray(R.array.status_filters).toList()
         val adapter = ArrayAdapter(
             requireContext(),
@@ -201,13 +201,15 @@ class ModifySubTaskFragment : Fragment() {
             statusOptions
         )
         binding.statusDropdown.setAdapter(adapter)
-        if (statusOptions.contains(status)) {
-            binding.statusDropdown.setText(status, false)
-        } else {
-            binding.statusDropdown.setText(statusOptions[0], false) // Default al primo valore
+        if (status in statusOptions.indices) {
+            binding.priorityDropdown.setText(statusOptions[status], false)
         }
     }
 
+    private fun getSelectedStatus(): Int {
+        val priorities = resources.getStringArray(R.array.status_filters)
+        return priorities.indexOf(binding.statusDropdown.text.toString()).takeIf { it >= 0 } ?: 0
+    }
 
     private fun loadUsers(assignedToDropdown: AutoCompleteTextView) {
         val currentUser = mAuth.currentUser ?: return

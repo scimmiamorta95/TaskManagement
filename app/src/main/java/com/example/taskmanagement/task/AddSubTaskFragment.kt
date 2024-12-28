@@ -94,7 +94,6 @@ class AddSubTaskFragment : Fragment() {
     private fun initializeViews() {
         val taskNameEditText = binding.subtaskName
         val taskDescriptionEditText = binding.subtaskDescription
-        val statusDropdown = binding.statusDropdown
         val deadline = binding.subtaskDeadline
         val assignedToDropdown = binding.assignedDropdown
         val addSubTaskButton = binding.addSubtaskButton
@@ -126,7 +125,8 @@ class AddSubTaskFragment : Fragment() {
             val priority = mapPriorityToNumber(priorityText)
             val deadlineDate = deadline.text.toString()
             val progress = progressSlider.value.toInt()
-            val status = statusDropdown.text.toString()
+            val statusText = binding.statusDropdown.text.toString()
+            val status = mapStatusToNumber(statusText)
             val assignedTo = assignedToDropdown.text.toString()
             val createdBy = mAuth.currentUser?.email
 
@@ -235,5 +235,15 @@ class AddSubTaskFragment : Fragment() {
 
         }
     }
+
+    private fun mapStatusToNumber(statusText: String): Int {
+        return when (statusText.lowercase()) {
+            "Todo" -> 0
+            "Assigned" -> 1
+            "Completed" -> 2
+            else -> 0
+        }
+    }
+
 
 }

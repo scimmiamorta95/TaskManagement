@@ -164,4 +164,7 @@
     <string name="permission_denied">Permesso negato</string>
     <string name="image_loading_error">Errore nel caricamento dell\'immagine</string>
     <string name="logout_success">Logout effettuato</string>
+    <string name="only_pm_can_edit_tasks">Solo i PM possono modificare i task!</string>
+    <string name="assigned_tasks">Tasks assegnati</string>
+    <string name="statistics">Statistiche</string>
 </resources>
