@@ -1,7 +1,9 @@
 package com.example.taskmanagement.task
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
@@ -66,6 +68,7 @@ class TaskAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         @SuppressLint("SetTextI18n")
+
         fun bind(task: Task) {
             binding.taskTitle.text = task.name
             binding.taskDescription.text = task.description
@@ -88,58 +91,69 @@ class TaskAdapter(
             binding.root.setOnClickListener {
                 onTaskClick(task)
             }
+            val sharedPrefs =
+                itemView.context.getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+            val userRole = sharedPrefs.getString("role", "defaultRole")
 
-            binding.deleteBtn.setOnClickListener {
-                db.collection("tasks")
-                    .whereEqualTo("name", task.name)
-                    .get()
-                    .addOnSuccessListener { documents ->
-                        if (!documents.isEmpty) {
-                            for (document in documents) {
-                                document.reference.delete()
-                                    .addOnSuccessListener {
-                                        val position = adapterPosition
-                                        if (position != RecyclerView.NO_POSITION) {
-                                            val updatedList = taskList.toMutableList()
-                                            updatedList.removeAt(position)
-                                            taskList = updatedList
-                                            notifyItemRemoved(position)
+            if (userRole == "PM") {
+                binding.deleteBtn.visibility = View.VISIBLE
+                binding.deleteBtn.setOnClickListener {
+                    db.collection("tasks")
+                        .whereEqualTo("name", task.name)
+                        .get()
+                        .addOnSuccessListener { documents ->
+                            if (!documents.isEmpty) {
+                                for (document in documents) {
+                                    document.reference.delete()
+                                        .addOnSuccessListener {
+                                            val position = adapterPosition
+                                            if (position != RecyclerView.NO_POSITION) {
+                                                val updatedList = taskList.toMutableList()
+                                                updatedList.removeAt(position)
+                                                taskList = updatedList
+                                                notifyItemRemoved(position)
+                                                Toast.makeText(
+                                                    itemView.context,
+                                                    itemView.context.getString(R.string.task_deleted_successfully),
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }
+                                        .addOnFailureListener { e ->
                                             Toast.makeText(
                                                 itemView.context,
-                                                itemView.context.getString(R.string.task_deleted_successfully),
+                                                itemView.context.getString(
+                                                    R.string.error_deleting_task,
+                                                    e.message
+                                                ),
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }
-                                    }
-                                    .addOnFailureListener { e ->
-                                        Toast.makeText(
-                                            itemView.context,
-                                            itemView.context.getString(
-                                                R.string.error_deleting_task,
-                                                e.message
-                                            ),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
+                                }
+                            } else {
+                                Toast.makeText(
+                                    itemView.context,
+                                    itemView.context.getString(R.string.task_not_found),
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
-                        } else {
+                        }
+                        .addOnFailureListener { e ->
                             Toast.makeText(
                                 itemView.context,
-                                itemView.context.getString(R.string.task_not_found),
+                                itemView.context.getString(
+                                    R.string.error_searching_task,
+                                    e.message
+                                ),
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
-                    }
-                    .addOnFailureListener { e ->
-                        Toast.makeText(
-                            itemView.context,
-                            itemView.context.getString(R.string.error_searching_task, e.message),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                }
+            } else {
+                binding.deleteBtn.visibility = View.GONE
             }
-
         }
+
 
         private fun calculateDaysRemaining(deadline: String?): Int {
             return try {

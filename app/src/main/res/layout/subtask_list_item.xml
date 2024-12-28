@@ -25,7 +25,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-
             android:padding="16dp">
 
             <LinearLayout
@@ -52,6 +51,29 @@
                     android:paddingEnd="8dp"
                     android:text="@string/high_priority"
                     android:textColor="@color/design_default_color_error" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/assigned_to_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/assigned_to"
+                    android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+                <TextView
+                    android:id="@+id/assigned_to"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/username"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="@color/design_default_color_primary_variant" />
             </LinearLayout>
 
             <View
@@ -134,7 +156,6 @@
                 </LinearLayout>
             </LinearLayout>
 
-
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
@@ -172,5 +193,4 @@
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -234,6 +234,7 @@ class ProfileFragment : Fragment() {
             }
 
         firestore!!.collection("tasks")
+            .whereEqualTo("assignedTo", userId)
             .get()
             .addOnSuccessListener { tasksSnapshot ->
                 var completedCount = 0

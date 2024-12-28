@@ -195,4 +195,6 @@
     <string name="error_saving_profile_image">Error saving profile image</string>
     <string name="error_loading_profile_image">Error loading profile image</string>
     <string name="task_id_not_found">Task ID not found</string>
+    <string name="error_not_authorized">Not authorized</string>
+
 </resources>

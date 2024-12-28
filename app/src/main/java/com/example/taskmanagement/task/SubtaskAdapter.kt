@@ -79,12 +79,13 @@ class SubtaskAdapter(
         private val doneButton: Button = itemView.findViewById(R.id.done_button)
         private val editButton: Button = itemView.findViewById(R.id.edit_button)
         private val deleteButton: Button = itemView.findViewById(R.id.delete_button)
+        private val subtaskAssignedTo: TextView = itemView.findViewById(R.id.assigned_to)
 
         private val db = FirebaseFirestore.getInstance()
 
         fun bind(subtask: SubTask) {
             subtaskTitle.text = subtask.name
-
+            subtaskAssignedTo.text = subtask.assignedTo
             subtaskDescription.text = subtask.description
             subtaskProgress.text = "${subtask.progress}%"
             subtaskPriority.text = when (subtask.priority) {

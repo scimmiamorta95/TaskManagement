@@ -77,7 +77,22 @@ class ModifySubTaskFragment : Fragment() {
             .addOnSuccessListener { document ->
                 if (document.exists()) {
                     val subtask = document.toObject(SubTask::class.java)
-                    subtask?.let { populateFields(it) }
+                    subtask?.let {
+                        val currentUserEmail = mAuth.currentUser?.email
+                        Log.e("ModifySubTaskFragment", "Current User Email: $currentUserEmail")
+                        Log.e("ModifySubTaskFragment", "Subtask Created By: ${subtask.createdBy}")
+                        Log.e("ModifySubTaskFragment", "Subtask Assigned To: ${subtask.assignedTo}")
+                        if (currentUserEmail == subtask.createdBy || currentUserEmail == subtask.assignedTo) {
+                            populateFields(it)
+                        } else {
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.error_not_authorized),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            findNavController().popBackStack()
+                        }
+                    }
                 } else {
                     Toast.makeText(
                         requireContext(),
@@ -93,6 +108,7 @@ class ModifySubTaskFragment : Fragment() {
                     .show()
             }
     }
+
 
     private fun populateFields(subtask: SubTask) {
         binding.subtaskName.setText(subtask.name)
@@ -135,8 +151,7 @@ class ModifySubTaskFragment : Fragment() {
                     progress = progress,
                     status = status,
                     assignedTo = assignedTo,
-                    priority = priority,
-                    createdBy = mAuth.currentUser?.email
+                    priority = priority
                 )
 
                 db.collection("tasks")

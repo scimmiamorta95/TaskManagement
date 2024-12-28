@@ -209,10 +209,7 @@ class SearchFragment : Fragment() {
 
     private suspend fun loadTasksForDev() {
         try {
-            val currentUserEmail = auth.currentUser?.email ?: return
-
             val assignedToDevResult = firestore.collection("tasks")
-                .whereEqualTo("assignedTo", currentUserEmail)
                 .get()
                 .await()
 

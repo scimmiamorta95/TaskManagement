@@ -65,11 +65,17 @@ class HomeFragment : Fragment() {
                 Toast.LENGTH_SHORT
             ).show()
         }
-
-        fabMain.setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_addTaskFragment)
+        val sharedPrefs =
+            requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+        val role = sharedPrefs.getString("role", "defaultRole")
+        if (role == "PL" || role == "Dev") {
+            fabMain.visibility = View.GONE
+        } else {
+            fabMain.visibility = View.VISIBLE
+            fabMain.setOnClickListener {
+                findNavController().navigate(R.id.action_homeFragment_to_addTaskFragment)
+            }
         }
-
         swipeRefreshLayout.setOnRefreshListener {
             currentUser?.let {
                 loadTasks()
@@ -83,7 +89,8 @@ class HomeFragment : Fragment() {
         swipeRefreshLayout.isRefreshing = true
         lifecycleScope.launch {
             try {
-                val sharedPrefs = requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+                val sharedPrefs =
+                    requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
                 val role = sharedPrefs.getString("role", "defaultRole")
                 taskList.clear()
                 taskIdMap.clear()
@@ -117,7 +124,6 @@ class HomeFragment : Fragment() {
     }
 
     private suspend fun loadTasksForPM() {
-        fabMain.visibility = View.VISIBLE
         try {
             val currentUserEmail = auth.currentUser?.email ?: return
             val createdByPMResult = firestore.collection("tasks")
@@ -134,9 +140,6 @@ class HomeFragment : Fragment() {
                 }
             }
             taskList.sortBy { it.name }
-
-            if (isAdded) fabMain.visibility = View.VISIBLE
-
         } catch (e: Exception) {
             if (isAdded) {
                 Toast.makeText(
@@ -149,7 +152,6 @@ class HomeFragment : Fragment() {
     }
 
     private suspend fun loadTasksForPL() {
-        fabMain.visibility = View.GONE
         try {
             val currentUserEmail = auth.currentUser?.email ?: return
 
@@ -187,12 +189,8 @@ class HomeFragment : Fragment() {
     }
 
     private suspend fun loadTasksForDev() {
-        fabMain.visibility = View.GONE
         try {
-            val currentUserEmail = auth.currentUser?.email ?: return
-
             val assignedToDevResult = firestore.collection("tasks")
-                .whereEqualTo("assignedTo", currentUserEmail)
                 .get()
                 .await()
 
@@ -206,7 +204,6 @@ class HomeFragment : Fragment() {
             }
 
             taskList.sortBy { it.name }
-            if (isAdded) fabMain.visibility = View.VISIBLE
         } catch (e: Exception) {
             if (isAdded) {
                 Toast.makeText(
