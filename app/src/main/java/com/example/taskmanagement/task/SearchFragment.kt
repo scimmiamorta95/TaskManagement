@@ -310,6 +310,12 @@ class SearchFragment : Fragment() {
     }
 
     private fun onTaskClick(task: Task) {
+        val sharedPrefs =
+            requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+        val role = sharedPrefs.getString("role", "defaultRole")
+        if (role == "PM") {
+            return
+        }
         val taskId = taskIdMap[task.name]
         Log.e("SearchFragment", "Task ID: $taskId")
         val bundle = Bundle().apply {

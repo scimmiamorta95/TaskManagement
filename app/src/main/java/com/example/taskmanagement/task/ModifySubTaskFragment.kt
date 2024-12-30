@@ -69,6 +69,9 @@ class ModifySubTaskFragment : Fragment() {
     }
 
     private fun loadSubtaskData() {
+        val sharedPrefs =
+            requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
+        val role = sharedPrefs.getString("role", "defaultRole")
         db.collection("tasks")
             .document(taskId ?: "")
             .collection("subTasks")
@@ -79,10 +82,7 @@ class ModifySubTaskFragment : Fragment() {
                     val subtask = document.toObject(SubTask::class.java)
                     subtask?.let {
                         val currentUserEmail = mAuth.currentUser?.email
-                        Log.e("ModifySubTaskFragment", "Current User Email: $currentUserEmail")
-                        Log.e("ModifySubTaskFragment", "Subtask Created By: ${subtask.createdBy}")
-                        Log.e("ModifySubTaskFragment", "Subtask Assigned To: ${subtask.assignedTo}")
-                        if (currentUserEmail == subtask.createdBy || currentUserEmail == subtask.assignedTo) {
+                        if (currentUserEmail == subtask.createdBy || currentUserEmail == subtask.assignedTo || role == "PL") {
                             populateFields(it)
                         } else {
                             Toast.makeText(
@@ -214,7 +214,7 @@ class ModifySubTaskFragment : Fragment() {
         )
         binding.statusDropdown.setAdapter(adapter)
         if (status in statusOptions.indices) {
-            binding.priorityDropdown.setText(statusOptions[status], false)
+            binding.statusDropdown.setText(statusOptions[status], false)
         }
     }
 

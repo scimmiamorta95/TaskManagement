@@ -26,7 +26,6 @@ import com.example.taskmanagement.task.HomeFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QuerySnapshot
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -82,9 +81,14 @@ class ProfileFragment : Fragment() {
         binding.assignedTasksList.adapter = taskAdapter
         binding.assignedTasksList.isNestedScrollingEnabled = true
 
-        loadUserData()
         loadProfileImage()
+        setupListeners()
+        loadUserDataByRole()
 
+        return binding.root
+    }
+
+    private fun setupListeners() {
         binding.buttonEditProfile.setOnClickListener {
             findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
         }
@@ -99,8 +103,6 @@ class ProfileFragment : Fragment() {
         binding.profileImage.setOnClickListener {
             checkPermissions()
         }
-
-        return binding.root
     }
 
     private fun checkPermissions() {
@@ -129,7 +131,6 @@ class ProfileFragment : Fragment() {
         }
     }
 
-
     private fun openGallery() {
         pickImageLauncher.launch("image/*")
     }
@@ -150,8 +151,7 @@ class ProfileFragment : Fragment() {
                 context,
                 getString(R.string.error_saving_profile_image),
                 Toast.LENGTH_SHORT
-            )
-                .show()
+            ).show()
         }
     }
 
@@ -173,129 +173,307 @@ class ProfileFragment : Fragment() {
         binding.profileImage.setImageBitmap(circularBitmap)
     }
 
-
-    private fun loadUserData() {
-        val userId = firebaseAuth!!.currentUser!!.email
-
+    private fun loadUserDataByRole() {
         val sharedPrefs =
             requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
         val role = sharedPrefs.getString("role", "defaultRole")
-        if (role == "PM") {
-            binding.taskListAssigned.visibility = View.GONE
+
+        when (role) {
+            "PM" -> loadDataForPM()
+            "PL" -> loadDataForPL()
+            "Dev" -> loadDataForDEV()
+            else -> Toast.makeText(
+                context,
+                getString(R.string.user_role_not_found),
+                Toast.LENGTH_SHORT
+            ).show()
         }
+    }
 
-        if (userId != null) {
-            firestore!!.collection("usersData")
-                .document(userId)
-                .get()
-                .addOnSuccessListener { document: DocumentSnapshot ->
-                    val firstName = document.getString("firstName")
-                    val lastName = document.getString("lastName")
-                    val skills = document.getString("skills")
+    private fun loadDataForPM() {
+        binding.statistics.visibility = View.GONE
+        loadBasicUserData()
+        loadTasksCreatedByPM()
+    }
 
-                    if (!firstName.isNullOrEmpty() && !lastName.isNullOrEmpty()) {
-                        binding.userName.text = getString(R.string.user_name, firstName, userId)
-                        binding.welcomeMessage.text = getString(R.string.welcome_message, firstName)
+    private fun loadDataForPL() {
+        loadBasicUserData()
+        loadTasksAssignedToPL()
+        loadSubTaskStatistics("PL")
+    }
 
-                    } else {
-                        val email = firebaseAuth!!.currentUser!!.email
-                        binding.userName.text = email
-                        binding.welcomeMessage.text = getString(R.string.welcome_message, email)
-                    }
+    private fun loadDataForDEV() {
+        loadBasicUserData()
+        loadTasksAssignedToDev()
+        loadSubTaskStatistics("Dev")
+    }
 
-                    binding.skillsList.text = skills ?: "Nessuna skill disponibile"
-                }
-                .addOnFailureListener {
-                    Toast.makeText(
-                        context,
-                        getString(R.string.error_loading_users),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-        }
-        firestore!!.collection("tasks")
-            .whereEqualTo("assignedTo", userId)
+    private fun loadBasicUserData() {
+        val userId = firebaseAuth!!.currentUser!!.email
+
+        firestore!!.collection("usersData")
+            .document(userId!!)
             .get()
-            .addOnSuccessListener { queryDocumentSnapshots: QuerySnapshot ->
+            .addOnSuccessListener { document: DocumentSnapshot ->
+                val firstName = document.getString("firstName")
+                val lastName = document.getString("lastName")
+                val skills = document.getString("skills")
+
+                if (!firstName.isNullOrEmpty() && !lastName.isNullOrEmpty()) {
+                    binding.userName.text = getString(R.string.user_name, firstName, userId)
+                    binding.welcomeMessage.text = getString(R.string.welcome_message, firstName)
+                } else {
+                    val email = firebaseAuth!!.currentUser!!.email
+                    binding.userName.text = email
+                    binding.welcomeMessage.text = getString(R.string.welcome_message, email)
+                }
+
+                binding.skillsList.text = skills ?: getString(R.string.no_skills_available)
+            }
+            .addOnFailureListener {
+                Toast.makeText(
+                    context,
+                    getString(R.string.error_loading_users),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+    }
+
+    private fun loadTasksCreatedByPM() {
+        val userId = firebaseAuth!!.currentUser!!.email
+
+        firestore!!.collection("tasks")
+            .whereEqualTo("createdBy", userId) // Filtra i task creati dal PM
+            .get()
+            .addOnSuccessListener { tasksSnapshot ->
                 taskList.clear()
-                for (snapshot in queryDocumentSnapshots) {
-                    val taskName = snapshot.getString("name")
-                    if (taskName != null) {
+
+                for (task in tasksSnapshot) {
+                    val taskName = task.getString("name")
+                    if (!taskName.isNullOrEmpty()) {
                         taskList.add(taskName)
                     }
                 }
+
                 taskAdapter!!.notifyDataSetChanged()
                 listViewHeight(binding.assignedTasksList)
             }
             .addOnFailureListener {
-                Toast.makeText(context, getString(R.string.error_loading_tasks), Toast.LENGTH_SHORT)
-                    .show()
-
+                Toast.makeText(
+                    context,
+                    getString(R.string.error_loading_tasks),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
+    }
+
+    private fun loadTasksAssignedToPL() {
+        val userId = firebaseAuth!!.currentUser!!.email
 
         firestore!!.collection("tasks")
             .whereEqualTo("assignedTo", userId)
             .get()
             .addOnSuccessListener { tasksSnapshot ->
-                var completedCount = 0
-                var assignedCount = 0
-                var toDoCount = 0
-
-                val taskCount = tasksSnapshot.size()
-                var tasksProcessed = 0
-
-                if (taskCount == 0) {
-                    updateStatistics(completedCount, assignedCount, toDoCount)
-                    return@addOnSuccessListener
-                }
+                taskList.clear()
 
                 for (task in tasksSnapshot) {
-                    val taskId = task.id
-
-                    val subTaskQuery = if (role == "PL") {
-                        firestore!!.collection("tasks").document(taskId).collection("subTasks")
-                    } else {
-                        firestore!!.collection("tasks")
-                            .document(taskId)
-                            .collection("subTasks")
-                            .whereEqualTo("assignedTo", userId)
+                    val taskName = task.getString("name")
+                    if (!taskName.isNullOrEmpty()) {
+                        taskList.add(taskName)
                     }
-
-                    subTaskQuery.get()
-                        .addOnSuccessListener { subTasksSnapshot ->
-                            for (subTask in subTasksSnapshot) {
-                                val subTaskStatus = subTask.getLong("status")?.toInt()
-                                when (subTaskStatus) {
-                                    2 -> completedCount++
-                                    1 -> assignedCount++
-                                    0 -> toDoCount++
-                                }
-                            }
-
-                            tasksProcessed++
-
-                            if (tasksProcessed == taskCount) {
-                                updateStatistics(completedCount, assignedCount, toDoCount)
-                            }
-                        }
-                        .addOnFailureListener {
-                            Log.e(
-                                "ProfileFragment",
-                                "Errore nel recupero dei sottotask per il task $taskId"
-                            )
-                            tasksProcessed++
-                            if (tasksProcessed == taskCount) {
-                                updateStatistics(completedCount, assignedCount, toDoCount)
-                            }
-                        }
+                }
+                taskAdapter!!.notifyDataSetChanged()
+                listViewHeight(binding.assignedTasksList)
+                if (tasksSnapshot.isEmpty) {
+                    Toast.makeText(
+                        context,
+                        getString(R.string.error_loading_tasks),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
             .addOnFailureListener {
                 Toast.makeText(context, getString(R.string.error_loading_tasks), Toast.LENGTH_SHORT)
                     .show()
             }
+    }
 
 
+    private fun loadTasksAssignedToDev() {
+        val userId = firebaseAuth!!.currentUser!!.email
+
+        firestore!!.collection("tasks")
+            .get()
+            .addOnSuccessListener { tasksSnapshot ->
+                taskList.clear()
+                var tasksProcessed = 0
+
+                for (task in tasksSnapshot) {
+                    val taskId = task.id
+
+                    firestore!!.collection("tasks")
+                        .document(taskId)
+                        .collection("subTasks")
+                        .whereEqualTo("assignedTo", userId)
+                        .get()
+                        .addOnSuccessListener { subTasksSnapshot ->
+                            for (subTask in subTasksSnapshot) {
+                                val subTaskName = subTask.getString("name")
+                                if (subTaskName != null) {
+                                    taskList.add(subTaskName)
+                                }
+                            }
+
+                            tasksProcessed++
+                            if (tasksProcessed == tasksSnapshot.size()) {
+                                taskAdapter!!.notifyDataSetChanged()
+                                listViewHeight(binding.assignedTasksList)
+                            }
+                        }
+                        .addOnFailureListener {
+                            tasksProcessed++
+                            if (tasksProcessed == tasksSnapshot.size()) {
+                                taskAdapter!!.notifyDataSetChanged()
+                                listViewHeight(binding.assignedTasksList)
+                            }
+                            Log.e(
+                                "ProfileFragment",
+                                "Errore caricamento dei sottotask per il task $taskId"
+                            )
+                        }
+                }
+
+                if (tasksSnapshot.isEmpty) {
+                    taskAdapter!!.notifyDataSetChanged()
+                    listViewHeight(binding.assignedTasksList)
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(context, getString(R.string.error_loading_tasks), Toast.LENGTH_SHORT)
+                    .show()
+            }
+    }
+
+
+    private fun loadSubTaskStatistics(role: String) {
+        val userId = firebaseAuth!!.currentUser!!.email
+        if (role == "Dev") {
+            firestore!!.collection("tasks")
+                .get()
+                .addOnSuccessListener { tasksSnapshot ->
+                    var completedCount = 0
+                    var assignedCount = 0
+                    var toDoCount = 0
+
+                    var tasksProcessed = 0
+                    val taskCount = tasksSnapshot.size()
+
+                    if (taskCount == 0) {
+                        updateStatistics(completedCount, assignedCount, toDoCount)
+                        return@addOnSuccessListener
+                    }
+
+                    for (task in tasksSnapshot) {
+                        val taskId = task.id
+
+                        firestore!!.collection("tasks")
+                            .document(taskId)
+                            .collection("subTasks")
+                            .whereEqualTo("assignedTo", userId)
+                            .get()
+                            .addOnSuccessListener { subTasksSnapshot ->
+                                for (subTask in subTasksSnapshot) {
+                                    val subTaskStatus = subTask.getLong("status")?.toInt()
+                                    when (subTaskStatus) {
+                                        2 -> completedCount++
+                                        1 -> assignedCount++
+                                        0 -> toDoCount++
+                                    }
+                                }
+
+                                tasksProcessed++
+
+                                if (tasksProcessed == taskCount) {
+                                    updateStatistics(completedCount, assignedCount, toDoCount)
+                                }
+                            }
+                            .addOnFailureListener {
+                                tasksProcessed++
+                                if (tasksProcessed == taskCount) {
+                                    updateStatistics(completedCount, assignedCount, toDoCount)
+                                }
+                            }
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(
+                        context,
+                        getString(R.string.error_loading_tasks),
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                }
+        } else {
+            firestore!!.collection("tasks")
+                .whereEqualTo("assignedTo", userId)
+                .get()
+                .addOnSuccessListener { tasksSnapshot ->
+                    var completedCount = 0
+                    var assignedCount = 0
+                    var toDoCount = 0
+
+                    val taskCount = tasksSnapshot.size()
+                    var tasksProcessed = 0
+
+                    if (taskCount == 0) {
+                        updateStatistics(completedCount, assignedCount, toDoCount)
+                        return@addOnSuccessListener
+                    }
+
+                    for (task in tasksSnapshot) {
+                        val taskId = task.id
+
+                        val subTaskQuery =
+                            firestore!!.collection("tasks").document(taskId).collection("subTasks")
+
+                        subTaskQuery.get()
+                            .addOnSuccessListener { subTasksSnapshot ->
+                                for (subTask in subTasksSnapshot) {
+                                    val subTaskStatus = subTask.getLong("status")?.toInt()
+                                    when (subTaskStatus) {
+                                        2 -> completedCount++
+                                        1 -> assignedCount++
+                                        0 -> toDoCount++
+                                    }
+                                }
+
+                                tasksProcessed++
+
+                                if (tasksProcessed == taskCount) {
+                                    updateStatistics(completedCount, assignedCount, toDoCount)
+                                }
+                            }
+                            .addOnFailureListener {
+                                Log.e(
+                                    "ProfileFragment",
+                                    "Errore nel recupero dei sottotask per il task $taskId"
+                                )
+                                tasksProcessed++
+                                if (tasksProcessed == taskCount) {
+                                    updateStatistics(completedCount, assignedCount, toDoCount)
+                                }
+                            }
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(
+                        context,
+                        getString(R.string.error_loading_tasks),
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                }
+        }
     }
 
     private fun updateStatistics(completed: Int, assigned: Int, toDo: Int) {

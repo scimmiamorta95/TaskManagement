@@ -291,7 +291,6 @@ class HomeFragment : Fragment() {
         val sharedPrefs =
             requireContext().getSharedPreferences("TaskManagerPrefs", Context.MODE_PRIVATE)
         val role = sharedPrefs.getString("role", "defaultRole")
-        Log.d("HomeFragment", "Role: $role")
 
         if (role == "PM") {
             return

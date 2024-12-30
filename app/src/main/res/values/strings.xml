@@ -119,7 +119,7 @@
     <string name="error_retrieving_role">Error retrieving role</string>
     <string name="failed_to_add_subtask">Failed to add subtask: %1$s</string>
     <string name="subtask_added_successfully">Subtask added successfully</string>
-    <string name="assigned" translatable="false">Assigned</string>
+    <string name="assigned">Assigned</string>
     <string name="high">High</string>
     <string name="medium">Medium</string>
     <string name="low">Low</string>
@@ -196,5 +196,6 @@
     <string name="error_loading_profile_image">Error loading profile image</string>
     <string name="task_id_not_found">Task ID not found</string>
     <string name="error_not_authorized">Not authorized</string>
+    <string name="no_skills_available">No skills available</string>
 
 </resources>

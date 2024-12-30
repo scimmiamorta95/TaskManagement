@@ -175,5 +175,7 @@
     <string name="error_loading_profile_image">Errore caricamento immagine profilo</string>
     <string name="task_id_not_found">Task ID non trovato</string>
     <string name="error_not_authorized">Non sei autorizzato a modificare questo sottotask.</string>
+    <string name="no_skills_available">No skills presenti</string>
+    <string name="assigned">Assegnati</string>
 
 </resources>
